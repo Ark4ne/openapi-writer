@@ -21,11 +21,11 @@
                         ]
                     },
                     {
-                        "type": "object",
-                        "nullable": true,
                         "enum": [
                             null
-                        ]
+                        ],
+                        "type": "object",
+                        "nullable": true
                     }
                 ]
             }

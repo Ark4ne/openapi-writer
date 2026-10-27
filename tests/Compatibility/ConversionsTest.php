@@ -110,6 +110,34 @@ final class ConversionsTest extends TestCase
                 static fn(): OpenApi => self::schemas(Schema::string('Photo')->contentMediaType('image/png')->contentEncoding('base64')),
                 ['3.0' => [$schema . 'Photo'], '3.1' => [], '3.2' => []],
             ],
+            'null-in-the-type-list' => [
+                static fn(): OpenApi => self::schemas(Schema::create('Code')->type('string', 'null')),
+                ['3.0' => [$schema . 'Code'], '3.1' => [], '3.2' => []],
+            ],
+            'const-in-an-enum' => [
+                static fn(): OpenApi => self::schemas(Schema::string('Role')->enum('admin', 'member')->const('admin')),
+                ['3.0' => [$schema . 'Role'], '3.1' => [], '3.2' => []],
+            ],
+            'schema-examples-with-example' => [
+                static fn(): OpenApi => self::schemas(Schema::string('Name')->example('Carol')->examples('Alice', 'Bob')),
+                ['3.0' => [$schema . 'Name'], '3.1' => [], '3.2' => []],
+            ],
+            'exclusive-and-inclusive-bounds' => [
+                static fn(): OpenApi => self::schemas(Schema::number('Score')->minimum(0)->exclusiveMinimum(10)->maximum(50)->exclusiveMaximum(100)),
+                ['3.0' => [$schema . 'Score'], '3.1' => [], '3.2' => []],
+            ],
+            'multiple-types-with-any-of' => [
+                static fn(): OpenApi => self::schemas(Schema::create('Id')->type('string', 'integer')->anyOf(Schema::string()->minLength(1), Schema::integer()->minimum(1))),
+                ['3.0' => [$schema . 'Id'], '3.1' => [], '3.2' => []],
+            ],
+            'ref-with-siblings-and-all-of' => [
+                static fn(): OpenApi => self::schemas(Schema::ref('User', 'Admin')->allOf(Schema::object()->required('role'))),
+                ['3.0' => [$schema . 'Admin'], '3.1' => [], '3.2' => []],
+            ],
+            'boolean-not' => [
+                static fn(): OpenApi => self::schemas(Schema::create('Never')->not(true), Schema::create('Always')->not(false)),
+                ['3.0' => [$schema . 'Never', $schema . 'Always'], '3.1' => [], '3.2' => []],
+            ],
         ];
     }
 

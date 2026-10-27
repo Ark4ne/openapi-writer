@@ -6,6 +6,7 @@ namespace Ark4ne\OpenApiWriter\Tests\Compatibility;
 
 use Ark4ne\OpenApiWriter\Enums\Strictness;
 use Ark4ne\OpenApiWriter\Enums\Version;
+use Ark4ne\OpenApiWriter\Objects\Callback;
 use Ark4ne\OpenApiWriter\Objects\Components;
 use Ark4ne\OpenApiWriter\Objects\Discriminator;
 use Ark4ne\OpenApiWriter\Objects\Encoding;
@@ -97,6 +98,22 @@ final class UnsupportedFeaturesTest extends TestCase
                     ->security(SecurityRequirement::create()->schemes(['ApiKey' => ['read']])),
                 Version::V3_1_0,
                 ['/security/0/ApiKey'],
+            ],
+            'content-encoding' => [
+                static fn(): OpenApi => self::components(Components::create()->schemas(Schema::string('Token')->contentEncoding('base64url'))),
+                Version::V3_1_0,
+                ['/components/schemas/Token/contentEncoding'],
+            ],
+            'non-oauth-scopes-in-a-callback' => [
+                static fn(): OpenApi => Documents::compatibility()
+                    ->paths(PathItem::create('/hooks')->post(Operation::post()->responses(Response::ok())->callbacks(
+                        Callback::create('onEvent')->pathItems(PathItem::create('{$request.body#/url}')->post(
+                            Operation::post()->responses(Response::ok())->security(SecurityRequirement::create()->schemes(['ApiKey' => ['read']])),
+                        )),
+                    )))
+                    ->components(Components::create()->securitySchemes(SecurityScheme::apiKey('ApiKey')->name('X-API-Key')->in('header'))),
+                Version::V3_1_0,
+                ['/paths/~1hooks/post/callbacks/onEvent/{$request.body#~1url}/post/security/0/ApiKey'],
             ],
             'self' => [
                 static fn(): OpenApi => Documents::compatibility()->self('https://api.example.com/openapi.json'),

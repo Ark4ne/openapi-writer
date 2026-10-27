@@ -1,0 +1,20 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Role": {
+                "enum": [
+                    "admin",
+                    "member"
+                ],
+                "const": "admin",
+                "type": "string"
+            }
+        }
+    }
+}

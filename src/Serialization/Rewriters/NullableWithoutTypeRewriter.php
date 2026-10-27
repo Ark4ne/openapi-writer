@@ -38,13 +38,14 @@ final class NullableWithoutTypeRewriter implements Rewriter
             ARRAY_FILTER_USE_KEY,
         );
 
-        if (!$context->version->isAtLeast(Version::V3_1_0) || $branch === []) {
+        if ($branch === []) {
             return $node;
         }
 
+        $null = $context->version->isAtLeast(Version::V3_1_0) ? ['type' => 'null'] : NullTypeRewriter::NULL_SCHEMA;
         $node = array_diff_key($node, $branch);
-        $node['anyOf'] = [$branch, ['type' => 'null']];
-        $context->converted('nullable without type written as anyOf: [{…}, {type: "null"}]');
+        $node['anyOf'] = [$branch, $null];
+        $context->converted('nullable without type written as anyOf: [{…}, null]');
 
         return $node;
     }

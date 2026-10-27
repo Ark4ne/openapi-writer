@@ -8,38 +8,61 @@
 
 ## Conversions automatiques
 
-- [ ] `nullable()` avec un type → `type: X` + `nullable: true`
-- [ ] `nullable()` sur un `$ref` ou sans type → `anyOf: [{$ref}, {type: object, nullable: true, enum: [null]}]`
-- [ ] `Schema::null()` → `type: object` + `nullable: true` + `enum: [null]`
-- [ ] `exclusiveMinimum(n)` / `exclusiveMaximum(n)` → `minimum: n` + `exclusiveMinimum: true` (idem pour le maximum)
-- [ ] `const(v)` → `enum: [v]`
-- [ ] `examples(a, b)` sur un `Schema` → `example: a`
-- [ ] Plusieurs types non nuls → `anyOf` d'un schéma par type
-- [ ] `$ref` + champs voisins → `allOf: [{$ref}]` + champs voisins
-- [ ] `contentMediaType` binaire → `format: binary`
-- [ ] `contentEncoding: base64` → `format: byte`
-- [ ] `Response` sans description → `description: ""`
-- [ ] Aucun chemin → `paths: {}`
-- [ ] Sous-schéma booléen (`items: false`, `not: true`…) → `{}` / `{not: {}}`
+- [x] `nullable()` avec un type → `type: X` + `nullable: true`
+- [x] `nullable()` sur un `$ref` ou sans type → `anyOf: [{$ref}, {type: object, nullable: true, enum: [null]}]`
+- [x] `Schema::null()` → `type: object` + `nullable: true` + `enum: [null]`
+- [x] `exclusiveMinimum(n)` / `exclusiveMaximum(n)` → `minimum: n` + `exclusiveMinimum: true` (idem pour le maximum)
+- [x] `const(v)` → `enum: [v]`
+- [x] `examples(a, b)` sur un `Schema` → `example: a`
+- [x] Plusieurs types non nuls → `anyOf` d'un schéma par type
+- [x] `$ref` + champs voisins → `allOf: [{$ref}]` + champs voisins
+- [x] `contentMediaType` binaire → `format: binary`
+- [x] `contentEncoding: base64` → `format: byte`
+- [x] `Response` sans description → `description: ""`
+- [x] Aucun chemin → `paths: {}`
+- [x] Sous-schéma booléen (`items: false`, `not: true`…) → `{}` / `{not: {}}`
 
 ## Non exprimables en 3.0
 
-- [ ] `webhooks`, `jsonSchemaDialect`, `components.pathItems`
-- [ ] `info.summary`, `license.identifier`
-- [ ] `summary` et `description` sur un `Reference` (`$ref` sur un `PathItem` existe déjà en 3.0 : écrit tel quel)
-- [ ] Mots-clés JSON Schema 2020-12 sans équivalent : `prefixItems`, `contains`, `minContains`, `maxContains`,
+- [x] `webhooks`, `jsonSchemaDialect`, `components.pathItems`
+- [x] `info.summary`, `license.identifier`
+- [x] `summary` et `description` sur un `Reference` (`$ref` sur un `PathItem` existe déjà en 3.0 : écrit tel quel)
+- [x] Mots-clés JSON Schema 2020-12 sans équivalent : `prefixItems`, `contains`, `minContains`, `maxContains`,
       `if`/`then`/`else`, `$defs`, `$id`, `$anchor`, `$dynamicAnchor`, `$dynamicRef`, `$schema`, `$comment`,
       `unevaluatedItems`, `unevaluatedProperties`, `dependentRequired`, `dependentSchemas`, `patternProperties`,
       `propertyNames`, `contentSchema`
-- [ ] Type de sécurité `mutualTLS`, scopes sur un schéma de sécurité non OAuth2
-- [ ] Toutes les fonctionnalités propres à 3.2 (liste dans M5)
+- [x] Type de sécurité `mutualTLS`, scopes sur un schéma de sécurité non OAuth2
+- [x] Toutes les fonctionnalités propres à 3.2 (liste dans M5)
 
 ## Modes
 
-- [ ] Strict : une seule `UnsupportedFeatureException` qui liste toutes les fonctionnalités, avec leur JSON Pointer
-- [ ] Permissif : retrait + `Diagnostic` (niveau, pointeur, message) pour chaque fonctionnalité
+- [x] Strict : une seule `UnsupportedFeatureException` qui liste toutes les fonctionnalités, avec leur JSON Pointer
+- [x] Permissif : retrait + `Diagnostic` (niveau, pointeur, message) pour chaque fonctionnalité
 
 ## Critères de sortie
 
-- [ ] Matrice de versions verte pour 3.0.0 à 3.0.4
-- [ ] Conformité 3.0 verte, documents validés contre le schéma officiel 3.0
+- [x] Matrice de versions verte pour 3.0.0 à 3.0.4
+- [x] Conformité 3.0 verte, documents validés contre le schéma officiel 3.0
+
+## Notes de réalisation
+
+- Toutes les branches 3.0 tiennent dans les rewriters existants ; aucun `since` n'a été ajouté au modèle.
+- Ordre des clés : le schéma « null seul » de 3.0 s'écrit `{enum: [null], type: object, nullable: true}`, dans
+  l'ordre des champs comme tout autre nœud (le `Normalizer` trie après les rewriters). Les fixtures 3.0 qui
+  l'écrivaient `type`, `nullable`, `enum` ont été réordonnées, et `anyOf` utilise la même forme
+  (`NullTypeRewriter::NULL_SCHEMA`).
+- Une conversion n'est signalée qu'une fois : avec plusieurs types, c'est `MultiTypeRewriter` qui le signale (et non
+  `NullableRewriter` ou `NullTypeRewriter`) ; avec `contentEncoding`, c'est `ContentEncodingRewriter`.
+- Cas limites fixés par de nouvelles lignes de la matrice :
+  - `type('string', 'null')` → `type: string` + `nullable: true` (`null-in-the-type-list`) ;
+  - `const` à côté d'un `enum` → `enum: [v]`, la constante est la plus stricte (`const-in-an-enum`) ;
+  - `example` à côté d'`examples` → l'`example` est gardé (`schema-examples-with-example`) ;
+  - borne exclusive à côté d'une borne inclusive → la plus stricte des deux est gardée
+    (`exclusive-and-inclusive-bounds`) ;
+  - plusieurs types à côté d'un `anyOf` → `allOf: [{anyOf: types}]` + l'`anyOf` d'origine (`multiple-types-with-any-of`) ;
+  - `$ref` à côté d'un `allOf` → la référence passe en tête de l'`allOf` (`ref-with-siblings-and-all-of`) ;
+  - `not: true` / `not: false` → `{not: {}}` / `{not: {not: {}}}` (`boolean-not`).
+- Non exprimables ajoutés : un `contentEncoding` autre que `base64` (`content-encoding`) ; les scopes hors OAuth2
+  sont aussi cherchés dans les opérations des callbacks (`non-oauth-scopes-in-a-callback`).
+- Un `format` déjà défini l'emporte sur `binary` / `byte`.
+- Restent rouges : la suite Validation (M6).

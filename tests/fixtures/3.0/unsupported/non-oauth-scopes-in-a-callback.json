@@ -1,0 +1,45 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/hooks": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "callbacks": {
+                    "onEvent": {
+                        "{$request.body#/url}": {
+                            "post": {
+                                "responses": {
+                                    "200": {
+                                        "description": "OK"
+                                    }
+                                },
+                                "security": [
+                                    {
+                                        "ApiKey": []
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "ApiKey": {
+                "type": "apiKey",
+                "name": "X-API-Key",
+                "in": "header"
+            }
+        }
+    }
+}

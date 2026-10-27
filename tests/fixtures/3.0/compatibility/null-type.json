@@ -8,11 +8,11 @@
     "components": {
         "schemas": {
             "Nothing": {
-                "type": "object",
-                "nullable": true,
                 "enum": [
                     null
-                ]
+                ],
+                "type": "object",
+                "nullable": true
             }
         }
     }

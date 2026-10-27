@@ -251,7 +251,12 @@ Règles fixées par la suite de tests (M2) :
 - Le pointeur d'un diagnostic est celui du nœud réécrit ; celui d'un champ `Unsupported` est celui du champ.
 - Un cas d'enum indisponible (`mutualTLS`, `querystring`, style `cookie`) retire l'objet qui le porte, au
   pointeur de cet objet.
-- Scopes d'un schéma non OAuth en 3.0 (permissif) : la liste devient `[]`, pointeur `/security/0/ApiKey`.
+- Scopes d'un schéma non OAuth en 3.0 (permissif) : la liste devient `[]`, pointeur `/security/0/ApiKey` ; ils
+  sont cherchés dans `security` du document, des opérations et des opérations de leurs callbacks.
+- Une conversion est signalée une fois, même quand plusieurs rewriters y participent (plusieurs types + `nullable`,
+  `contentMediaType` + `contentEncoding`) ; deux conversions distinctes d'un même nœud donnent deux `Converted`.
+- En 3.0, le schéma « null seul » s'écrit `{enum: [null], type: object, nullable: true}`, dans l'ordre des champs,
+  y compris dans une branche `anyOf`.
 - Les extensions réservées `x-oai-` / `x-oas-` sont écrites en 3.0, retirées ou rejetées à partir de 3.1.
 - `Validator::validate()` ne lève pas `UnsupportedFeatureException` : chaque fonctionnalité non exprimable devient
   une violation dont la règle est `Serializer::class` ; les erreurs du schéma officiel ont pour règle

@@ -1,0 +1,18 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Score": {
+                "type": "number",
+                "maximum": 50,
+                "minimum": 10,
+                "exclusiveMinimum": true
+            }
+        }
+    }
+}

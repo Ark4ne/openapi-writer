@@ -1,0 +1,28 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Id": {
+                "type": [
+                    "string",
+                    "integer"
+                ],
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                ]
+            }
+        }
+    }
+}
