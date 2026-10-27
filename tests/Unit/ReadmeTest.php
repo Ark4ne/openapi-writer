@@ -6,13 +6,13 @@ namespace Ark4ne\OpenApiWriter\Tests\Unit;
 
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Objects\OpenApi;
+use Ark4ne\OpenApiWriter\Tests\Support\MarkdownExamples;
 use Ark4ne\OpenApiWriter\Tests\TestCase;
 use Ark4ne\OpenApiWriter\Validation\Violations;
 use PHPUnit\Framework\Attributes\CoversNothing;
-use RuntimeException;
 
 /**
- * The PHP examples of the README run, in order, as one script: their `use` statements are gathered at the top.
+ * The PHP examples of the README run, in order, as one script.
  */
 #[CoversNothing]
 final class ReadmeTest extends TestCase
@@ -70,37 +70,6 @@ final class ReadmeTest extends TestCase
      */
     private static function examples(): array
     {
-        return self::$variables ??= self::execute();
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private static function execute(): array
-    {
-        $readme = (string) file_get_contents(self::README);
-
-        if (preg_match_all('/^```php\n(.*?)^```$/ms', $readme, $blocks) === 0) {
-            throw new RuntimeException('The README has no PHP example.');
-        }
-
-        $imports = [];
-        $code = '';
-
-        foreach ($blocks[1] as $block) {
-            foreach (explode("\n", $block) as $line) {
-                if (str_starts_with($line, 'use ')) {
-                    $imports[$line] = true;
-                } else {
-                    $code .= $line . "\n";
-                }
-            }
-        }
-
-        return (static function (string $script): array {
-            eval($script);
-
-            return get_defined_vars();
-        })(implode("\n", array_keys($imports)) . "\n" . $code);
+        return self::$variables ??= MarkdownExamples::run(self::README);
     }
 }

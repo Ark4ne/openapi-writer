@@ -36,6 +36,8 @@ First release.
   paths, non-empty document and value types. Rules can be removed or added (`Rule` interface).
 - The official schemas of OpenAPI 3.0, 3.1 and 3.2 and the JSON Schema 2020-12 meta-schemas are embedded.
 - No runtime dependency besides `ext-json`; PHP 8.2 to 8.5.
+- Agent skill `skills/openapi-writer/` (rules, API reference, recipes, version matrix) for AI coding agents that use
+  the library, with its examples run by the test suite.
 
 [Unreleased]: https://github.com/ark4ne/openapi-writer/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/ark4ne/openapi-writer/releases/tag/v1.0.0

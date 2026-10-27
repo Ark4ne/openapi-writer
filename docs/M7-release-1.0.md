@@ -47,3 +47,14 @@
   composant et doit être déclaré.
 - `Violation::__toString()` réutilise `ClassName::short()`. `ReadmeTest` exécute le README une seule fois et valide
   aussi la sortie 3.0.4 du mode permissif contre le schéma officiel.
+
+## Guide pour agents
+
+- `skills/openapi-writer/` : `SKILL.md` (déclencheur, règles qui évitent les erreurs courantes, intégration dans un
+  projet, erreurs, liste de contrôle), `reference.md` (chaque objet et chaque méthode, enums, sérialisation,
+  validation), `recipes.md` (recettes complètes) et `versions.md` (conversions et fonctionnalités par version).
+- Livré dans le paquet (pas d'`export-ignore`) : le projet consommateur le lie dans `.claude/skills/` et l'agent lit
+  toujours la version installée.
+- `tests/Unit/SkillTest.php` exécute les exemples de chaque fichier, valide sans aucune violation chaque document
+  qu'ils construisent, et vérifie que `reference.md` nomme chaque méthode publique de chaque objet et chaque cas
+  d'enum. `tests/Support/MarkdownExamples` exécute les blocs PHP, pour le README comme pour le skill.

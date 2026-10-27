@@ -81,6 +81,8 @@ one class.
 - Suites: `tests/Unit` (one class per object), `tests/Compatibility` (every version difference × every version),
   `tests/Conformance` (official OpenAPI Initiative examples), `tests/Validation` (valid + invalid case per rule).
 - Expected outputs are JSON files in `tests/fixtures/<version>/`, never inline strings.
+- The agent skill `skills/openapi-writer/` (English, shipped with the package) documents the public API for agents that
+  use the library: update it with every public change; `SkillTest` runs its examples and checks its reference.
 - Every serialized document in a test is also validated against the official schema of its version.
 - Test names are sentences: `test_nullable_string_becomes_type_array_in_3_1`.
 - Incomplete, skipped or risky tests, warnings, notices and deprecations fail the build.

@@ -352,6 +352,22 @@ official schema of the version and these rules:
 
 Within a line, the output does not depend on the patch version, except for the `openapi` field.
 
+## For AI coding agents
+
+The package ships an agent skill in [`skills/openapi-writer/`](skills/openapi-writer/SKILL.md): the rules that avoid
+the usual mistakes, the full API reference, tested recipes and the version matrix. Its examples run in the test suite,
+so it matches the installed version.
+
+With Claude Code, link it into the project that uses the library:
+
+```bash
+mkdir -p .claude/skills
+ln -s ../../vendor/ark4ne/openapi-writer/skills/openapi-writer .claude/skills/openapi-writer
+```
+
+With another agent, point its instructions file (`AGENTS.md`…) to
+`vendor/ark4ne/openapi-writer/skills/openapi-writer/SKILL.md`.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). The design is documented (in French) in [docs/architecture.md](docs/architecture.md).

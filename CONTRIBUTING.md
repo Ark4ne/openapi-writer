@@ -35,6 +35,9 @@ Tests come first: never add behaviour without a test that fails before it.
 - Test names are sentences: `test_nullable_string_becomes_type_array_in_3_1`.
 - Incomplete, skipped or risky tests, warnings, notices and deprecations fail the build.
 - The PHP examples of the README run in `tests/Unit/ReadmeTest.php`: keep them working.
+- The agent skill (`skills/openapi-writer/`) is part of the package. `tests/Unit/SkillTest.php` runs its examples,
+  validates the documents they build, and checks that `reference.md` names every public method of every object and
+  every enum case: a new method or case must be documented there.
 
 ## Adding a field
 
@@ -95,7 +98,8 @@ diff before committing it: the fixtures are the expected output.
 
 ### 5. The documentation
 
-Mention the field in the `CHANGELOG.md`, and in `docs/architecture.md` if it introduces a new rule.
+Mention the field in the `CHANGELOG.md`, in `skills/openapi-writer/reference.md` (and `versions.md` when it is not
+available in every version), and in `docs/architecture.md` if it introduces a new rule.
 
 ## Adding a validation rule
 
