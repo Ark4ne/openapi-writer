@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Ark4ne\OpenApiWriter\Tests\Validation\Rules;
 
 use Ark4ne\OpenApiWriter\Enums\Version;
+use Ark4ne\OpenApiWriter\Tests\Support\Fixtures;
 use Ark4ne\OpenApiWriter\Tests\Validation\RuleTestCase;
 use Ark4ne\OpenApiWriter\Validation\Rule;
 use Ark4ne\OpenApiWriter\Validation\Rules\TagParentsRule;
 use Ark4ne\OpenApiWriter\Validation\Severity;
+use Ark4ne\OpenApiWriter\Validation\Violations;
 
 final class TagParentsRuleTest extends RuleTestCase
 {
@@ -25,6 +27,15 @@ final class TagParentsRuleTest extends RuleTestCase
     public function test_an_unknown_parent_is_reported(): void
     {
         self::assertSame([['/tags/0/parent', Severity::Error]], self::check('tag-parents-unknown', Version::V3_2_0));
+    }
+
+    public function test_parents_are_not_checked_before_3_2(): void
+    {
+        $violations = new Violations();
+
+        self::rule()->check(Fixtures::document(Version::V3_2_0, 'validation/tag-parents-unknown'), Version::V3_1_2, $violations);
+
+        self::assertSame([], $violations->all());
     }
 
     public function test_every_tag_of_a_cycle_is_reported(): void

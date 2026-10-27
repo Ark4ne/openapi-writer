@@ -20,7 +20,7 @@ final class ValueTypeRule implements Rule
 {
     public function check(array $document, Version $version, Violations $violations): void
     {
-        self::walk($document, JsonPointer::root(), null, $version, $violations);
+        self::walk($document, JsonPointer::root(), Scope::root(), $version, $violations);
     }
 
     /**
@@ -37,21 +37,23 @@ final class ValueTypeRule implements Rule
      *
      * @param array<mixed> $node
      */
-    private static function walk(array $node, JsonPointer $pointer, int|string|null $parentKey, Version $version, Violations $violations): void
+    private static function walk(array $node, JsonPointer $pointer, Scope $scope, Version $version, Violations $violations): void
     {
         foreach ($node as $key => $child) {
-            if (!is_array($child) || Values::isFree($parentKey, $key, $child)) {
+            $childScope = $scope->enter($key, $child);
+
+            if (!is_array($child) || $childScope === null) {
                 continue;
             }
 
-            if (in_array($key, ['schema', 'itemSchema'], true) && !Values::isMapOfNames($parentKey)) {
+            if (in_array($key, ['schema', 'itemSchema'], true) && !$scope->isMap()) {
                 self::schema($child, $pointer->append($key), $version, $violations);
             } elseif ($key === 'schemas' && $pointer->toString() === '/components') {
                 foreach ($child as $name => $schema) {
                     self::schema($schema, $pointer->append($key, $name), $version, $violations);
                 }
             } else {
-                self::walk($child, $pointer->append($key), $key, $version, $violations);
+                self::walk($child, $pointer->append($key), $childScope, $version, $violations);
             }
         }
     }

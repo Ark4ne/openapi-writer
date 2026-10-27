@@ -17,6 +17,10 @@ final class TagParentsRule implements Rule
 {
     public function check(array $document, Version $version, Violations $violations): void
     {
+        if (!$version->isAtLeast(Version::V3_2_0)) {
+            return;
+        }
+
         $parents = [];
 
         foreach (Document::entries($document['tags'] ?? null) as $tag) {

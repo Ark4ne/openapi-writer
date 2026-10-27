@@ -56,3 +56,13 @@ message), sans jamais lever d'exception sur un document invalide.
 - Couverture de lignes du projet : 97,65 %.
 - MSI non mesuré en local (Infection n'est pas installé) : à confirmer par la CI.
 - L'exclusion PHPStan `throws.unusedType` sur `src/Validation/` est retirée.
+- Revue de code appliquée :
+  - erreurs de racine d'opis placées à `""` au lieu de `/` ;
+  - document impossible à encoder en JSON signalé en violation au lieu d'une exception ;
+  - nature d'un nœud (objet ou map de noms) tirée de son parent (`Rules\Scope` remplace `Rules\Values`) : un
+    composant nommé `content` n'est plus parcouru comme une map ;
+  - extensions de Responses et `requestBody` de Link traités comme valeurs libres ;
+  - opérations et paramètres écrits à côté d'un `$ref` de path item vérifiés ;
+  - path item externe compté par `NonEmptyDocumentRule` ;
+  - `TagParentsRule` inactive avant 3.2 ;
+  - version par défaut du `Validator` lue dans le champ `openapi` du document, sans recopier `declaredVersion()`.

@@ -24,6 +24,26 @@
         },
         "/orgs/{org}": {
             "$ref": "#/components/pathItems/Org"
+        },
+        "/projects/{project}": {
+            "$ref": "#/components/pathItems/Project",
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/apps/{app}": {
+            "$ref": "#/components/pathItems/Plain",
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -38,6 +58,14 @@
             },
             "Org": {
                 "name": "org",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "Project": {
+                "name": "project",
                 "in": "path",
                 "required": true,
                 "schema": {
@@ -68,6 +96,29 @@
                         "$ref": "#/components/parameters/Org"
                     }
                 ]
+            },
+            "Project": {
+                "delete": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Project"
+                    }
+                ]
+            },
+            "Plain": {
+                "delete": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    }
+                }
             }
         }
     }

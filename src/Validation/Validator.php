@@ -10,6 +10,8 @@ use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Objects\OpenApi;
 use Ark4ne\OpenApiWriter\Serialization\DiagnosticLevel;
 use Ark4ne\OpenApiWriter\Serialization\Serializer;
+use Ark4ne\OpenApiWriter\Support\JsonPointer;
+use JsonException;
 
 /**
  * Writes a document for a version and checks it: official schema (when a JsonSchemaValidator is given), then every
@@ -18,6 +20,8 @@ use Ark4ne\OpenApiWriter\Serialization\Serializer;
  * The document is written in lenient mode: each feature the version cannot express becomes an error whose rule is
  * `Serializer::class`. The written document is then not the one described, so neither the official schema nor the
  * rules run on it: they would report the consequences of the removal (an empty document, a dangling reference).
+ * A document that cannot be encoded as JSON (invalid UTF-8) is an error of `Serializer::class` instead of the official
+ * schema check; the rules still run on the written array.
  */
 final readonly class Validator
 {
@@ -84,7 +88,7 @@ final readonly class Validator
      */
     public function validate(OpenApi $openApi, Version|string|null $version = null): Violations
     {
-        $serializer = Serializer::for($version ?? ($openApi->openapi instanceof Version ? $openApi->openapi : null), Strictness::Lenient);
+        $serializer = Serializer::for($version ?? $openApi->openapi, Strictness::Lenient);
         $result = $serializer->serialize($openApi);
         $violations = new Violations();
 
@@ -96,7 +100,13 @@ final readonly class Validator
             return $violations;
         }
 
-        $this->schemaValidator?->validate($result->toJson(), $serializer->version, $violations);
+        if ($this->schemaValidator !== null) {
+            try {
+                $this->schemaValidator->validate($result->toJson(), $serializer->version, $violations);
+            } catch (JsonException $exception) {
+                $violations->add(new Violation(JsonPointer::root(), Serializer::class, 'the document cannot be written as JSON: ' . $exception->getMessage()));
+            }
+        }
 
         foreach ($this->rules as $rule) {
             $rule->check($result->toArray(), $serializer->version, $violations);

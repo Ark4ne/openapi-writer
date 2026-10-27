@@ -64,6 +64,16 @@
                     }
                 ]
             }
+        },
+        "parameters": {
+            "content": {
+                "name": "content",
+                "in": "query",
+                "schema": {
+                    "type": "integer",
+                    "default": "x"
+                }
+            }
         }
     }
 }

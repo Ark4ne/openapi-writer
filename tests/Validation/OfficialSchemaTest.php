@@ -148,6 +148,16 @@ final class OfficialSchemaTest extends TestCase
         );
     }
 
+    public function test_an_error_of_the_document_itself_is_at_the_root(): void
+    {
+        $violations = new Violations();
+
+        (new OpisJsonSchemaValidator())->validate('{"openapi": "3.1.2", "paths": {}}', Version::V3_1_2, $violations);
+
+        self::assertSame([''], array_map(static fn(Violation $violation): string => $violation->pointer->toString(), $violations->all()));
+        self::assertSame([], $violations->all()[0]->pointer->tokens());
+    }
+
     public function test_invalid_json_is_a_violation_at_the_root(): void
     {
         $violations = new Violations();

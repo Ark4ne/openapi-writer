@@ -51,4 +51,12 @@ final class NonEmptyDocumentRuleTest extends RuleTestCase
     {
         self::assertSame([], self::check('non-empty-document-reference', Version::V3_1_2));
     }
+
+    /**
+     * An external path item is not read: it may declare operations.
+     */
+    public function test_a_path_item_reference_to_another_document_counts(): void
+    {
+        self::assertSame([], self::check('non-empty-document-external', Version::V3_1_2));
+    }
 }

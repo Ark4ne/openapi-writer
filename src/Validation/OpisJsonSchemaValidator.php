@@ -105,7 +105,8 @@ final class OpisJsonSchemaValidator implements JsonSchemaValidator
         $errors = (new ErrorFormatter())->format($error, false);
 
         foreach ($errors as $pointer => $message) {
-            $violations->add(new Violation(JsonPointer::fromString(rawurldecode($pointer)), self::class, $message));
+            // Opis writes the root as `/`, which RFC 6901 reads as the member named "".
+            $violations->add(new Violation($pointer === '/' ? JsonPointer::root() : JsonPointer::fromString(rawurldecode($pointer)), self::class, $message));
         }
     }
 

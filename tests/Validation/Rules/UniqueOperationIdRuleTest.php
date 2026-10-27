@@ -42,4 +42,9 @@ final class UniqueOperationIdRuleTest extends RuleTestCase
             ['/components/pathItems/Ping/get/operationId', Severity::Error],
         ], self::check('unique-operation-id-nested', Version::V3_2_0));
     }
+
+    public function test_operations_written_next_to_a_path_item_reference_count(): void
+    {
+        self::assertSame([['/paths/~1b/get/operationId', Severity::Error]], self::check('unique-operation-id-reference', Version::V3_1_2));
+    }
 }

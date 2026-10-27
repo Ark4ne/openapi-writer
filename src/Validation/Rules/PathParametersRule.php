@@ -24,25 +24,32 @@ final class PathParametersRule implements Rule
                 continue;
             }
 
-            $pathItem = Document::resolve($document, $entry);
-
-            if (!is_array($pathItem)) {
+            if (!is_array($entry)) {
                 continue;
             }
 
-            // A path item written as a `$ref` is reported at the reference, the place a fix happens.
+            // The fields written next to a `$ref` and those of its target both apply. An operation of the target is
+            // reported at the reference, the place a fix happens.
             $pointer = JsonPointer::root()->append('paths', $path);
-            $declared = self::declared($document, $pathItem);
+            $target = isset($entry['$ref']) ? Document::resolve($document, $entry) : null;
+            $sources = is_array($target) ? [[$entry, false], [$target, true]] : [[$entry, false]];
+            $declared = [];
 
-            foreach (Document::operationsOf($pathItem, $pointer) as [$operationPointer, $operation]) {
-                $missing = array_diff($matches[1], [...$declared, ...self::declared($document, $operation)]);
+            foreach ($sources as [$pathItem]) {
+                $declared = [...$declared, ...self::declared($document, $pathItem)];
+            }
 
-                if ($missing !== []) {
-                    $violations->add(new Violation(
-                        is_array($entry) && isset($entry['$ref']) ? $pointer : $operationPointer,
-                        self::class,
-                        sprintf('%s has no required in: path parameter for {%s}', $operationPointer->toString(), implode('}, {', $missing)),
-                    ));
+            foreach ($sources as [$pathItem, $isTarget]) {
+                foreach (Document::operationsOf($pathItem, $pointer) as [$operationPointer, $operation]) {
+                    $missing = array_diff($matches[1], [...$declared, ...self::declared($document, $operation)]);
+
+                    if ($missing !== []) {
+                        $violations->add(new Violation(
+                            $isTarget ? $pointer : $operationPointer,
+                            self::class,
+                            sprintf('%s has no required in: path parameter for {%s}', $operationPointer->toString(), implode('}, {', $missing)),
+                        ));
+                    }
                 }
             }
         }

@@ -31,10 +31,15 @@ final class PathParametersRuleTest extends RuleTestCase
     }
 
     /**
-     * A path item written as a `$ref` is reported at the reference.
+     * A path item written as a `$ref` is reported at the reference. Operations and parameters written next to the
+     * `$ref` count with those of its target.
      */
     public function test_references_to_parameters_and_path_items_are_followed(): void
     {
-        self::assertSame([['/paths/~1teams~1{team}', Severity::Error]], self::check('path-parameters-references', Version::V3_1_2));
+        self::assertSame([
+            ['/paths/~1teams~1{team}', Severity::Error],
+            ['/paths/~1apps~1{app}/get', Severity::Error],
+            ['/paths/~1apps~1{app}', Severity::Error],
+        ], self::check('path-parameters-references', Version::V3_1_2));
     }
 }

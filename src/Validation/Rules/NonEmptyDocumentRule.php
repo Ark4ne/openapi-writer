@@ -14,7 +14,8 @@ use Ark4ne\OpenApiWriter\Validation\Violations;
 /**
  * The document declares at least one operation, in `paths` or `webhooks` (`additionalOperations` included). The
  * official schema accepts a document without any (empty `paths`, path items without methods, components only), but it
- * describes no API: warning at the root. Path items of `components` are only reusable, so they do not count.
+ * describes no API: warning at the root. Path items of `components` are only reusable, so they do not count; a path
+ * item of another document (external `$ref`) is not read and counts.
  */
 final class NonEmptyDocumentRule implements Rule
 {
@@ -22,10 +23,23 @@ final class NonEmptyDocumentRule implements Rule
     {
         foreach (['paths', 'webhooks'] as $field) {
             foreach (Document::entries($document[$field] ?? null) as $key => $pathItem) {
-                $pathItem = Document::resolve($document, $pathItem);
+                if (Document::isExtension($key) || !is_array($pathItem)) {
+                    continue;
+                }
 
-                if (!Document::isExtension($key) && is_array($pathItem) && Document::operationsOf($pathItem, JsonPointer::root())->valid()) {
+                $reference = $pathItem['$ref'] ?? null;
+
+                // A path item of another document is not read: it may declare operations.
+                if (is_string($reference) && Document::local($reference) === null) {
                     return;
+                }
+
+                $target = $reference === null ? null : Document::resolve($document, $pathItem);
+
+                foreach ([$pathItem, $target] as $candidate) {
+                    if (is_array($candidate) && Document::operationsOf($candidate, JsonPointer::root())->valid()) {
+                        return;
+                    }
                 }
             }
         }

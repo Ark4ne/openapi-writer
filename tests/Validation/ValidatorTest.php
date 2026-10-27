@@ -130,6 +130,20 @@ final class ValidatorTest extends TestCase
         self::assertSame([['/webhooks', Serializer::class, Severity::Error]], self::summary($violations));
     }
 
+    /**
+     * The rules still run on the written array; only the official schema needs JSON.
+     */
+    public function test_a_document_that_cannot_be_encoded_as_json_is_a_violation_instead_of_an_exception(): void
+    {
+        $document = OpenApi::create()
+            ->info(Info::create()->title("Invalid \xB1 UTF-8")->version('1.0.0'))
+            ->paths(PathItem::create('/users')->get(Operation::get()->responses(Response::ok())));
+
+        $violations = Validator::create(new OpisJsonSchemaValidator())->validate($document, Version::V3_1_2);
+
+        self::assertSame([['', Serializer::class, Severity::Error]], self::summary($violations));
+    }
+
     public function test_an_unknown_version_is_rejected(): void
     {
         self::assertThrows(InvalidArgumentException::class, static fn(): Violations => Validator::create()->validate(Documents::tictactoe(), '2.0'));

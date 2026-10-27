@@ -20,7 +20,7 @@ final class LocalReferencesRule implements Rule
 {
     public function check(array $document, Version $version, Violations $violations): void
     {
-        self::walk($document, $document, $document, JsonPointer::root(), null, $violations);
+        self::walk($document, $document, $document, JsonPointer::root(), Scope::root(), $violations);
     }
 
     /**
@@ -28,7 +28,7 @@ final class LocalReferencesRule implements Rule
      * @param array<mixed>         $resource the document, or the closest schema with an `$id`: the base of a `$ref`
      * @param array<mixed>         $node
      */
-    private static function walk(array $document, array $resource, array $node, JsonPointer $pointer, int|string|null $parentKey, Violations $violations): void
+    private static function walk(array $document, array $resource, array $node, JsonPointer $pointer, Scope $scope, Violations $violations): void
     {
         if (is_string($node['$id'] ?? null)) {
             $resource = $node;
@@ -46,7 +46,7 @@ final class LocalReferencesRule implements Rule
             $violations->add(new Violation($pointer->append('operationRef'), self::class, sprintf('operationRef "%s" points to nothing', $operationRef)));
         }
 
-        if ($parentKey === 'discriminator') {
+        if ($scope->field === 'discriminator') {
             foreach (Document::entries($node['mapping'] ?? null) as $value => $mapping) {
                 $mapping = Document::local($mapping);
 
@@ -57,8 +57,10 @@ final class LocalReferencesRule implements Rule
         }
 
         foreach ($node as $key => $child) {
-            if (is_array($child) && !Values::isFree($parentKey, $key, $child)) {
-                self::walk($document, $resource, $child, $pointer->append($key), $key, $violations);
+            $childScope = $scope->enter($key, $child);
+
+            if (is_array($child) && $childScope !== null) {
+                self::walk($document, $resource, $child, $pointer->append($key), $childScope, $violations);
             }
         }
     }

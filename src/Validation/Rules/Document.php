@@ -22,8 +22,8 @@ final class Document
 
     /**
      * Every path item written in place, in document order: `paths`, `webhooks`, then the path items and callbacks of
-     * `components`, each followed by the path items of the callbacks of its operations. A path item that is a `$ref`
-     * is not followed.
+     * `components`, each followed by the path items of the callbacks of its operations. The target of a path item
+     * `$ref` is not followed, but the fields written next to the `$ref` are listed.
      *
      * @param array<string, mixed> $document
      *
@@ -37,7 +37,7 @@ final class Document
     }
 
     /**
-     * Every operation written in place, in document order: each one is followed by the operations of its callbacks.
+     * Every operation written in the document, in document order: each one is followed by the operations of its callbacks.
      *
      * @param array<string, mixed> $document
      *
@@ -158,7 +158,7 @@ final class Document
 
         foreach (['paths', 'webhooks'] as $field) {
             foreach (self::entries($document[$field] ?? null) as $key => $pathItem) {
-                if (!self::isExtension($key) && self::isInPlace($pathItem)) {
+                if (!self::isExtension($key) && is_array($pathItem)) {
                     yield [$root->append($field, $key), $pathItem];
                 }
             }
@@ -168,7 +168,7 @@ final class Document
             foreach (self::entries($entries) as $name => $entry) {
                 $pointer = $root->append('components', $section, $name);
 
-                if ($section === 'pathItems' && self::isInPlace($entry)) {
+                if ($section === 'pathItems' && is_array($entry)) {
                     yield [$pointer, $entry];
                 } elseif ($section === 'callbacks') {
                     yield from self::callback($entry, $pointer);
@@ -232,22 +232,15 @@ final class Document
      */
     private static function callback(mixed $callback, JsonPointer $pointer): Generator
     {
-        if (!self::isInPlace($callback)) {
+        // A Callback written as a Reference Object has no path item next to its `$ref`.
+        if (!is_array($callback) || isset($callback['$ref'])) {
             return;
         }
 
         foreach ($callback as $expression => $pathItem) {
-            if (!self::isExtension($expression) && self::isInPlace($pathItem)) {
+            if (!self::isExtension($expression) && is_array($pathItem)) {
                 yield [$pointer->append($expression), $pathItem];
             }
         }
-    }
-
-    /**
-     * @phpstan-assert-if-true array<mixed> $node
-     */
-    private static function isInPlace(mixed $node): bool
-    {
-        return is_array($node) && !isset($node['$ref']);
     }
 }

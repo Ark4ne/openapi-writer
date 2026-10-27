@@ -13,8 +13,17 @@
                         "links": {
                             "broken": {
                                 "operationRef": "#/paths/~1missing/get"
+                            },
+                            "free": {
+                                "operationId": "listUsers",
+                                "requestBody": {
+                                    "$ref": "#/y"
+                                }
                             }
                         }
+                    },
+                    "x-meta": {
+                        "$ref": "#/internal/thing"
                     }
                 },
                 "x-meta": {
@@ -68,6 +77,12 @@
                 },
                 "example": {
                     "$ref": "#/nowhere"
+                }
+            },
+            "content": {
+                "type": "object",
+                "example": {
+                    "$ref": "#/nope"
                 }
             }
         }

@@ -32,7 +32,9 @@ final class LocalReferencesRuleTest extends RuleTestCase
     }
 
     /**
-     * A `$ref` inside a schema with an `$id` resolves in that schema; free values and extensions are not read.
+     * A `$ref` inside a schema with an `$id` resolves in that schema. Free values are not read: `example`,
+     * extensions of Responses, request body of a Link; a component named like a map field (`content`)
+     * is still an object.
      */
     public function test_operation_refs_mappings_and_refs_of_schema_resources_are_checked(): void
     {

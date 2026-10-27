@@ -302,11 +302,16 @@ interface Rule
 - Une règle peut recevoir un document que le schéma officiel rejette : chaque accès vérifie la forme du nœud.
 - Le parcours est partagé par `Rules\Document` (interne) : path items et opérations écrits sur place, dans l'ordre du
   document (`paths`, `webhooks`, puis `components`), chaque opération suivie de celles de ses callbacks ; un path item
-  `$ref` n'est pas suivi par ce parcours. `Document::resolve()` suit les `$ref` locaux (paramètres, path items,
-  schémas de sécurité). Une violation est signalée à l'endroit où l'on corrige, la référence plutôt que sa cible.
-- `Rules\Values` repère les valeurs libres (`example`, `default`, `const`, `enum`, `value`, `dataValue`, extensions,
-  liste `examples` d'un schéma) : un `$ref` ou un `schema` qui s'y trouve est une donnée. Dans une map de noms
-  (`properties`, sections de `components`…), ces clés sont des noms et sont parcourues.
+  `$ref` est listé avec les champs écrits à côté de sa référence, sans sa cible. `Document::resolve()` suit les `$ref`
+  locaux (paramètres, path items, schémas de sécurité) ; une cible externe n'est pas lue. Une violation est signalée à l'endroit où l'on corrige, la référence plutôt que sa cible.
+- `Rules\Scope` sait si un nœud est un objet de la spec ou une map de noms, d'après le champ qui le contient et la
+  nature de son parent : une entrée de map est toujours un objet, même nommée `content`. Il repère les valeurs
+  libres (`example`, `default`, `const`, `enum`, `value`, `dataValue`, extensions, liste `examples` d'un schéma,
+  `requestBody` d'un Link) : un `$ref` ou un `schema` qui s'y trouve est une donnée. Les clés `x-` sont des
+  extensions dans Paths, Responses et Callback, des noms dans les autres maps.
+- `OpisJsonSchemaValidator` place à la racine (`""`) les erreurs qu'opis signale sous `/`. Un document impossible à
+  encoder en JSON (UTF-8 invalide) devient une violation `Serializer::class` au lieu d'une exception ; les règles
+  s'exécutent quand même.
 - `OpisJsonSchemaValidator` charge les schémas à la première validation, une fois par instance (pas d'état
   statique) : on réutilise une instance pour valider plusieurs documents.
 

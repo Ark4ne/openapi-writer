@@ -32,7 +32,8 @@ final class ValueTypeRuleTest extends RuleTestCase
     }
 
     /**
-     * 3.0: `nullable` accepts null, `1.0` is an integer, and schemas of parameters and nested schemas are checked.
+     * 3.0: `nullable` accepts null, `1.0` is an integer, and schemas of parameters and nested schemas are checked, also
+     * in a component named like a map field (`content`).
      */
     public function test_nested_schemas_and_nullable_in_3_0(): void
     {
@@ -42,6 +43,7 @@ final class ValueTypeRuleTest extends RuleTestCase
             ['/components/schemas/User/properties/age/example', Severity::Warning],
             ['/components/schemas/List/items/example', Severity::Warning],
             ['/components/schemas/Mixed/allOf/0/default', Severity::Warning],
+            ['/components/parameters/content/schema/default', Severity::Warning],
         ], self::check('value-type-nested', Version::V3_0_4));
     }
 }
