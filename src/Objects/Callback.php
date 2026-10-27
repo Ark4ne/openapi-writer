@@ -31,7 +31,7 @@ final class Callback extends ExtensibleSpecObject implements CallbackContract
      */
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
-        return Reference::create($objectId);
+        return Reference::to(self::componentPath('callbacks', $ref), $objectId);
     }
 
     /**

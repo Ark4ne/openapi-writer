@@ -35,7 +35,7 @@ passe PHPStan, et échoue entièrement sur des assertions.
 - [x] Chaque ligne des tableaux de la spécification (section 6) a au moins un test par version
 - [x] Aucun test ne s'arrête sur une erreur fatale : tous échouent sur une assertion
 - [x] PHPStan niveau max vert sur `tests/`
-- [ ] Suite relue et validée par les contributeurs
+- [x] Suite relue et validée par les contributeurs
 
 ## Notes
 

@@ -10,6 +10,7 @@ use Ark4ne\OpenApiWriter\Contracts\RequestBodyContract;
 use Ark4ne\OpenApiWriter\Contracts\ResponseContract;
 use Ark4ne\OpenApiWriter\Enums\HttpMethod;
 use Ark4ne\OpenApiWriter\Exceptions\DuplicateObjectIdException;
+use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Exceptions\MissingObjectIdException;
 use Ark4ne\OpenApiWriter\Metadata\Field;
 use Ark4ne\OpenApiWriter\Support\Undefined;
@@ -196,12 +197,24 @@ final class Operation extends ExtensibleSpecObject
      * Sets the responses: either one Responses object, or responses keyed by their objectId (the status code), wrapped
      * in a new Responses. Unlike the other setters it does not map one-to-one to `with()`, because of this wrapping.
      *
+     * @throws InvalidArgumentException when a Responses object is mixed with other responses
      * @throws MissingObjectIdException
      * @throws DuplicateObjectIdException
      */
     public function responses(Responses|ResponseContract ...$responses): static
     {
-        return clone $this;
+        $wrapper = array_values(array_filter($responses, static fn(Responses|ResponseContract $response): bool => $response instanceof Responses));
+
+        if ($wrapper === []) {
+            /** @var list<ResponseContract> $responses */
+            return $this->with('responses', Responses::create()->responses(...$responses));
+        }
+
+        if (count($responses) > 1) {
+            throw InvalidArgumentException::forField(self::class, 'responses', 'a Responses object cannot be mixed with other responses');
+        }
+
+        return $this->with('responses', $wrapper[0]);
     }
 
     /**
@@ -212,6 +225,8 @@ final class Operation extends ExtensibleSpecObject
      */
     public function addResponses(ResponseContract ...$responses): static
     {
-        return clone $this;
+        $current = $this->responses;
+
+        return $this->with('responses', ($current instanceof Responses ? $current : Responses::create())->addResponses(...$responses));
     }
 }

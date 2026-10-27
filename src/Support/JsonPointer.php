@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Support;
 
+use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Stringable;
 
 /**
@@ -26,7 +27,18 @@ final readonly class JsonPointer implements Stringable
      */
     public static function fromString(string $pointer): self
     {
-        return new self([]);
+        if ($pointer === '') {
+            return self::root();
+        }
+
+        if (!str_starts_with($pointer, '/')) {
+            throw InvalidArgumentException::forPointer($pointer);
+        }
+
+        return new self(array_map(
+            static fn(string $token): string => str_replace(['~1', '~0'], ['/', '~'], $token),
+            explode('/', substr($pointer, 1)),
+        ));
     }
 
     /**
@@ -34,7 +46,7 @@ final readonly class JsonPointer implements Stringable
      */
     public function append(string|int ...$tokens): self
     {
-        return new self($this->tokens);
+        return new self([...$this->tokens, ...array_map(strval(...), array_values($tokens))]);
     }
 
     /**
@@ -47,7 +59,10 @@ final readonly class JsonPointer implements Stringable
 
     public function toString(): string
     {
-        return '';
+        return implode('', array_map(
+            static fn(string $token): string => '/' . str_replace(['~', '/'], ['~0', '~1'], $token),
+            $this->tokens,
+        ));
     }
 
     public function __toString(): string

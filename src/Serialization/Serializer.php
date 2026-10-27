@@ -33,7 +33,15 @@ final readonly class Serializer
         Strictness|string $strictness = Strictness::Strict,
         ?RewriterChain $rewriters = null,
     ): self {
-        return new self(Version::default(), Strictness::Strict, $rewriters ?? RewriterChain::default());
+        if (is_string($version)) {
+            $version = Version::tryFrom($version) ?? throw InvalidArgumentException::forEnumValue(self::class, 'version', Version::class, $version);
+        }
+
+        if (is_string($strictness)) {
+            $strictness = Strictness::tryFrom($strictness) ?? throw InvalidArgumentException::forEnumValue(self::class, 'strictness', Strictness::class, $strictness);
+        }
+
+        return new self($version ?? Version::default(), $strictness, $rewriters ?? RewriterChain::default());
     }
 
     /**
@@ -41,6 +49,28 @@ final readonly class Serializer
      */
     public function serialize(SpecObject $object): SerializationResult
     {
-        return new SerializationResult([], $this->version, new Diagnostics());
+        $context = Context::root($this->version, $this->strictness);
+        $document = (new Normalizer($this->rewriters))->normalize($object, $context);
+        $unsupported = $context->diagnostics->ofLevel(DiagnosticLevel::Unsupported);
+
+        if ($unsupported !== [] && $this->strictness === Strictness::Strict) {
+            $diagnostics = new Diagnostics();
+
+            foreach ($unsupported as $diagnostic) {
+                $diagnostics->add($diagnostic);
+            }
+
+            throw UnsupportedFeatureException::fromDiagnostics($diagnostics);
+        }
+
+        $diagnostics = new Diagnostics();
+
+        foreach ($context->diagnostics as $diagnostic) {
+            $diagnostics->add($diagnostic->level === DiagnosticLevel::Unsupported
+                ? new Diagnostic(DiagnosticLevel::Dropped, $diagnostic->pointer, $diagnostic->message)
+                : $diagnostic);
+        }
+
+        return new SerializationResult($document, $this->version, $diagnostics);
     }
 }

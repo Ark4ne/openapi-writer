@@ -40,7 +40,10 @@ final class Responses extends ExtensibleSpecObject
      */
     public function responses(ResponseContract ...$responses): static
     {
-        return $this->with('responses', $responses);
+        [$default, $responses] = $this->split($responses);
+        $updated = $responses === [] ? $this->without('responses') : $this->with('responses', $responses);
+
+        return $default === null ? $updated : $updated->with('default', $default);
     }
 
     /**
@@ -51,6 +54,36 @@ final class Responses extends ExtensibleSpecObject
      */
     public function addResponses(ResponseContract ...$responses): static
     {
-        return $this->withAdded('responses', $responses);
+        [$default, $responses] = $this->split($responses);
+        $updated = $responses === [] ? $this : $this->withAdded('responses', $responses);
+
+        return $default === null ? $updated : $updated->with('default', $default);
+    }
+
+    /**
+     * Separates the response whose objectId is `default` from the others.
+     *
+     * @param array<array-key, ResponseContract> $responses
+     *
+     * @return array{ResponseContract|null, list<ResponseContract>}
+     *
+     * @throws DuplicateObjectIdException when the default response is given twice or is already set
+     */
+    private function split(array $responses): array
+    {
+        $default = null;
+        $others = [];
+
+        foreach ($responses as $response) {
+            if (!$response instanceof SpecObject || $response->objectId !== 'default') {
+                $others[] = $response;
+            } elseif ($default !== null || $this->has('default')) {
+                throw DuplicateObjectIdException::forField(self::class, 'default', 'default');
+            } else {
+                $default = $response;
+            }
+        }
+
+        return [$default, $others];
     }
 }

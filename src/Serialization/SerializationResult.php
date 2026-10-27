@@ -6,6 +6,8 @@ namespace Ark4ne\OpenApiWriter\Serialization;
 
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Exceptions\MissingDependencyException;
+use Ark4ne\OpenApiWriter\Serialization\Encoders\JsonEncoder;
+use Ark4ne\OpenApiWriter\Serialization\Encoders\SymfonyYamlEncoder;
 
 /**
  * A written document and the diagnostics collected while writing it.
@@ -36,7 +38,7 @@ final readonly class SerializationResult
      */
     public function toJson(int $flags = 0): string
     {
-        return '';
+        return (new JsonEncoder($flags))->encode($this->document);
     }
 
     /**
@@ -44,7 +46,7 @@ final readonly class SerializationResult
      */
     public function toYaml(): string
     {
-        return '';
+        return (new SymfonyYamlEncoder())->encode($this->document);
     }
 
     public function diagnostics(): Diagnostics

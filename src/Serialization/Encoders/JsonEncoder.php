@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ark4ne\OpenApiWriter\Serialization\Encoders;
 
 use JsonException;
+use stdClass;
 
 final readonly class JsonEncoder implements Encoder
 {
@@ -22,6 +23,6 @@ final readonly class JsonEncoder implements Encoder
      */
     public function encode(array $document): string
     {
-        return '';
+        return json_encode($document === [] ? new stdClass() : $document, self::DEFAULT_FLAGS | $this->flags | JSON_THROW_ON_ERROR);
     }
 }

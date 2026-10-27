@@ -21,7 +21,10 @@ final class Diagnostics implements Countable, IteratorAggregate
      */
     private array $diagnostics = [];
 
-    public function add(Diagnostic $diagnostic): void {}
+    public function add(Diagnostic $diagnostic): void
+    {
+        $this->diagnostics[] = $diagnostic;
+    }
 
     /**
      * @return list<Diagnostic>
@@ -36,17 +39,17 @@ final class Diagnostics implements Countable, IteratorAggregate
      */
     public function ofLevel(DiagnosticLevel $level): array
     {
-        return [];
+        return array_values(array_filter($this->diagnostics, static fn(Diagnostic $diagnostic): bool => $diagnostic->level === $level));
     }
 
     public function isEmpty(): bool
     {
-        return false;
+        return $this->diagnostics === [];
     }
 
     public function count(): int
     {
-        return 0;
+        return count($this->diagnostics);
     }
 
     /**

@@ -141,7 +141,8 @@ dans les signatures.
   irréguliers (`requestBodies`) et les collisions (`example()` existe déjà à côté de `examples()`).
   Exemples : `addProperties()`, `addPaths()`, `addTags()`, `addRequired()`, `addAllOf()`.
 - Listes (`servers`, `tags`, `required`, `allOf`…) : `add*` ajoute sans dédoublonner ; l'unicité éventuelle
-  (`required`, `enum`) relève du validateur.
+  (`required`, `enum`) relève du validateur. **Exception :** `Schema.type`, dont un doublon est interdit dans toutes
+  les versions : `type()` et `addType()` le refusent (`SpecObjectTestCase::listsOfUniqueValues()`).
 - Maps (`properties`, `paths`, `responses`, sections de `components`) : indexées par `objectId`, dans les deux
   méthodes. `objectId` manquant → `MissingObjectIdException`. Un `objectId` déjà présent → `DuplicateObjectIdException`,
   avec `add*` comme avec le setter : on ne remplace jamais une entrée en silence.
@@ -187,7 +188,13 @@ Pour chaque objet, le `Normalizer` :
    il signale `Unsupported` et l'ignore ; sinon il le normalise (récursion sur les objets, listes, maps) ;
 3. écrit un objet ou une map vide en `\stdClass` (donc `{}` en JSON, jamais `[]`), y compris dans `toArray()` ;
    les rewriters respectent la même convention ;
-4. passe le nœud obtenu à la `RewriterChain`.
+4. passe le nœud obtenu à la `RewriterChain` ;
+5. remet les clés du nœud réécrit dans l'ordre des champs (tri stable) : les entrées d'un champ « patterned » à la
+   place de ce champ, les clés inconnues ensuite, les extensions en dernier. Un rewriter n'a donc pas à placer
+   les clés qu'il ajoute (`anyOf` à la place d'un `$ref`…).
+
+Une valeur libre (`default`, `example`, extensions…) est écrite telle quelle, après vérification : `NAN`, `INF`, une
+ressource ou un objet non sérialisable lèvent une `InvalidArgumentException` qui porte le JSON Pointer de la valeur.
 
 Le `Normalizer` ne contient **aucune** règle propre à une version.
 
@@ -240,8 +247,8 @@ Règles fixées par la suite de tests (M2) :
 - `Validator::validate()` ne lève pas `UnsupportedFeatureException` : chaque fonctionnalité non exprimable devient
   une violation dont la règle est `Serializer::class` ; les erreurs du schéma officiel ont pour règle
   `OpisJsonSchemaValidator::class`.
-- YAML : `Yaml::DUMP_OBJECT_AS_MAP | DUMP_EMPTY_ARRAY_AS_SEQUENCE | DUMP_MULTI_LINE_LITERAL_BLOCK`, profondeur
-  inline 10, indentation 2 ; les codes de statut sont entre guillemets.
+- YAML : `Yaml::DUMP_OBJECT_AS_MAP | DUMP_EMPTY_ARRAY_AS_SEQUENCE | DUMP_MULTI_LINE_LITERAL_BLOCK |
+  DUMP_NUMERIC_KEY_AS_STRING`, profondeur inline 10, indentation 2 ; les codes de statut sont donc entre guillemets.
 
 ## 4. La validation
 

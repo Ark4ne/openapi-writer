@@ -55,6 +55,12 @@ final readonly class RewriterChain
      */
     public function rewrite(SpecObject $object, array $node, Context $context): array
     {
+        foreach ($this->rewriters as $rewriter) {
+            if ($rewriter->supports($object)) {
+                $node = $rewriter->rewrite($object, $node, $context);
+            }
+        }
+
         return $node;
     }
 }

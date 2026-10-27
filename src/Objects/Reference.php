@@ -16,8 +16,10 @@ use Ark4ne\OpenApiWriter\Contracts\ResponseContract;
 use Ark4ne\OpenApiWriter\Contracts\SchemaContract;
 use Ark4ne\OpenApiWriter\Contracts\SecuritySchemeContract;
 use Ark4ne\OpenApiWriter\Enums\Version;
+use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Exceptions\MissingObjectIdException;
 use Ark4ne\OpenApiWriter\Metadata\Field;
+use Ark4ne\OpenApiWriter\Support\JsonPointer;
 use Ark4ne\OpenApiWriter\Support\Undefined;
 
 /**
@@ -49,10 +51,27 @@ final class Reference extends SpecObject implements CallbackContract, ExampleCon
      * Reference to a component, from its objectId and its section (`#/components/schemas/<objectId>`).
      *
      * @throws MissingObjectIdException when the object has no objectId
+     * @throws InvalidArgumentException when the object is not a component
      */
     public static function for(SpecObject $object): static
     {
-        return static::create();
+        $section = match ($object::class) {
+            Schema::class => 'schemas',
+            Response::class => 'responses',
+            Parameter::class => 'parameters',
+            Example::class => 'examples',
+            RequestBody::class => 'requestBodies',
+            Header::class => 'headers',
+            SecurityScheme::class => 'securitySchemes',
+            Link::class => 'links',
+            Callback::class => 'callbacks',
+            PathItem::class => 'pathItems',
+            MediaType::class => 'mediaTypes',
+            default => throw InvalidArgumentException::forField(self::class, 'for', sprintf('%s is not a component', $object::class)),
+        };
+        $objectId = $object->objectId ?? throw MissingObjectIdException::forReference($object::class);
+
+        return static::to('#' . JsonPointer::root()->append('components', $section, $objectId)->toString());
     }
 
     /**

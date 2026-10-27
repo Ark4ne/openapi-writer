@@ -35,7 +35,7 @@ final class RequestBody extends ExtensibleSpecObject implements RequestBodyContr
      */
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
-        return Reference::create($objectId);
+        return Reference::to(self::componentPath('requestBodies', $ref), $objectId);
     }
 
     public function description(?string $description): static

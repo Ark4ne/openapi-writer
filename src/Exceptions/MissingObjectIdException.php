@@ -16,7 +16,7 @@ final class MissingObjectIdException extends InvalidArgumentException implements
      */
     public static function forField(string $class, string $field): self
     {
-        return new self();
+        return new self(sprintf('%s::%s: an entry has no objectId', self::shortName($class), $field));
     }
 
     /**
@@ -24,6 +24,14 @@ final class MissingObjectIdException extends InvalidArgumentException implements
      */
     public static function forReference(string $class): self
     {
-        return new self();
+        return new self(sprintf('Reference::for: the %s has no objectId', self::shortName($class)));
+    }
+
+    /**
+     * @param class-string $class
+     */
+    private static function shortName(string $class): string
+    {
+        return substr((string) strrchr('\\' . $class, '\\'), 1);
     }
 }

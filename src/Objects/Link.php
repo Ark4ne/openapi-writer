@@ -39,16 +39,24 @@ final class Link extends ExtensibleSpecObject implements LinkContract
      */
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
-        return Reference::create($objectId);
+        return Reference::to(self::componentPath('links', $ref), $objectId);
     }
 
     public function operationRef(?string $operationRef): static
     {
+        if ($operationRef !== null) {
+            $this->exclusiveOf('operationRef', 'operationId');
+        }
+
         return $this->with('operationRef', $operationRef);
     }
 
     public function operationId(?string $operationId): static
     {
+        if ($operationId !== null) {
+            $this->exclusiveOf('operationId', 'operationRef');
+        }
+
         return $this->with('operationId', $operationId);
     }
 

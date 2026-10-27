@@ -201,7 +201,7 @@ final class Schema extends ExtensibleSpecObject implements SchemaContract
      */
     public static function ref(string $ref, ?string $objectId = null): static
     {
-        return static::create($objectId);
+        return static::create($objectId)->with('ref', self::componentPath('schemas', $ref));
     }
 
     /**
@@ -320,11 +320,45 @@ final class Schema extends ExtensibleSpecObject implements SchemaContract
     /**
      * Several types are written as `anyOf` in 3.0; `SchemaType::Null` is converted too.
      *
-     * @throws InvalidArgumentException when a string is not a SchemaType value
+     * @throws InvalidArgumentException when a string is not a SchemaType value, or a type is given twice
      */
     public function type(SchemaType|string ...$type): static
     {
-        return $this->with('type', $type);
+        return $this->with('type', self::types([], $type));
+    }
+
+    /**
+     * Appends types; a type already present throws.
+     *
+     * @throws InvalidArgumentException when a string is not a SchemaType value, or a type is given twice
+     */
+    public function addType(SchemaType|string ...$type): static
+    {
+        return $this->with('type', self::types($this->type instanceof Undefined ? [] : $this->type, $type));
+    }
+
+    /**
+     * @param list<SchemaType>                $types
+     * @param array<array-key, SchemaType|string> $added
+     *
+     * @return list<SchemaType>
+     *
+     * @throws InvalidArgumentException
+     */
+    private static function types(array $types, array $added): array
+    {
+        foreach ($added as $value) {
+            $case = $value instanceof SchemaType ? $value : SchemaType::tryFrom($value);
+            $case ?? throw InvalidArgumentException::forEnumValue(self::class, 'type', SchemaType::class, $value);
+
+            if (in_array($case, $types, true)) {
+                throw InvalidArgumentException::forField(self::class, 'type', sprintf('"%s" is given twice', $case->value));
+            }
+
+            $types[] = $case;
+        }
+
+        return $types;
     }
 
     /**
@@ -376,21 +410,37 @@ final class Schema extends ExtensibleSpecObject implements SchemaContract
 
     public function minContains(?int $minContains): static
     {
+        if ($minContains !== null && $minContains < 0) {
+            throw InvalidArgumentException::forField(self::class, 'minContains', 'must be zero or more');
+        }
+
         return $this->with('minContains', $minContains);
     }
 
     public function maxContains(?int $maxContains): static
     {
+        if ($maxContains !== null && $maxContains < 0) {
+            throw InvalidArgumentException::forField(self::class, 'maxContains', 'must be zero or more');
+        }
+
         return $this->with('maxContains', $maxContains);
     }
 
     public function maxItems(?int $maxItems): static
     {
+        if ($maxItems !== null && $maxItems < 0) {
+            throw InvalidArgumentException::forField(self::class, 'maxItems', 'must be zero or more');
+        }
+
         return $this->with('maxItems', $maxItems);
     }
 
     public function minItems(?int $minItems): static
     {
+        if ($minItems !== null && $minItems < 0) {
+            throw InvalidArgumentException::forField(self::class, 'minItems', 'must be zero or more');
+        }
+
         return $this->with('minItems', $minItems);
     }
 
@@ -411,11 +461,19 @@ final class Schema extends ExtensibleSpecObject implements SchemaContract
 
     public function maxLength(?int $maxLength): static
     {
+        if ($maxLength !== null && $maxLength < 0) {
+            throw InvalidArgumentException::forField(self::class, 'maxLength', 'must be zero or more');
+        }
+
         return $this->with('maxLength', $maxLength);
     }
 
     public function minLength(?int $minLength): static
     {
+        if ($minLength !== null && $minLength < 0) {
+            throw InvalidArgumentException::forField(self::class, 'minLength', 'must be zero or more');
+        }
+
         return $this->with('minLength', $minLength);
     }
 
@@ -447,6 +505,10 @@ final class Schema extends ExtensibleSpecObject implements SchemaContract
 
     public function multipleOf(int|float|null $multipleOf): static
     {
+        if ($multipleOf !== null && $multipleOf <= 0) {
+            throw InvalidArgumentException::forField(self::class, 'multipleOf', 'must be greater than zero');
+        }
+
         return $this->with('multipleOf', $multipleOf);
     }
 
@@ -524,11 +586,19 @@ final class Schema extends ExtensibleSpecObject implements SchemaContract
 
     public function maxProperties(?int $maxProperties): static
     {
+        if ($maxProperties !== null && $maxProperties < 0) {
+            throw InvalidArgumentException::forField(self::class, 'maxProperties', 'must be zero or more');
+        }
+
         return $this->with('maxProperties', $maxProperties);
     }
 
     public function minProperties(?int $minProperties): static
     {
+        if ($minProperties !== null && $minProperties < 0) {
+            throw InvalidArgumentException::forField(self::class, 'minProperties', 'must be zero or more');
+        }
+
         return $this->with('minProperties', $minProperties);
     }
 

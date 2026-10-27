@@ -77,7 +77,7 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
      */
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
-        return Reference::create($objectId);
+        return Reference::to(self::componentPath('mediaTypes', $ref), $objectId);
     }
 
     public function description(?string $description): static
@@ -100,6 +100,8 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
      */
     public function example(mixed $example): static
     {
+        $this->exclusiveOf('example', 'examples');
+
         return $this->with('example', $example);
     }
 
@@ -111,6 +113,8 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
      */
     public function examples(ExampleContract ...$examples): static
     {
+        $this->exclusiveOf('examples', 'example');
+
         return $this->with('examples', $examples);
     }
 
@@ -122,6 +126,8 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
      */
     public function addExamples(ExampleContract ...$examples): static
     {
+        $this->exclusiveOf('examples', 'example');
+
         return $this->withAdded('examples', $examples);
     }
 

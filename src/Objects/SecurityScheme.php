@@ -74,7 +74,7 @@ final class SecurityScheme extends ExtensibleSpecObject implements SecuritySchem
      */
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
-        return Reference::create($objectId);
+        return Reference::to(self::componentPath('securitySchemes', $ref), $objectId);
     }
 
     /**

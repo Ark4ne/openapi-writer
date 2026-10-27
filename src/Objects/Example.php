@@ -38,7 +38,7 @@ final class Example extends ExtensibleSpecObject implements ExampleContract
      */
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
-        return Reference::create($objectId);
+        return Reference::to(self::componentPath('examples', $ref), $objectId);
     }
 
     public function summary(?string $summary): static
@@ -69,11 +69,17 @@ final class Example extends ExtensibleSpecObject implements ExampleContract
      */
     public function value(mixed $value): static
     {
+        $this->exclusiveOf('value', 'externalValue');
+
         return $this->with('value', $value);
     }
 
     public function externalValue(?string $externalValue): static
     {
+        if ($externalValue !== null) {
+            $this->exclusiveOf('externalValue', 'value');
+        }
+
         return $this->with('externalValue', $externalValue);
     }
 }

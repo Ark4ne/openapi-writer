@@ -129,7 +129,13 @@ final class Response extends ExtensibleSpecObject implements ResponseContract
      */
     public static function status(int|string $status): static
     {
-        return static::create((string) $status);
+        $status = (string) $status;
+
+        if (preg_match('/^(?:[1-5][0-9][0-9]|[1-5]XX)$/', $status) !== 1) {
+            throw InvalidArgumentException::forField(self::class, 'status', sprintf('"%s" is not a status code (100 to 599) or range (1XX to 5XX)', $status));
+        }
+
+        return static::create($status);
     }
 
     /**
@@ -140,7 +146,7 @@ final class Response extends ExtensibleSpecObject implements ResponseContract
      */
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
-        return Reference::create($objectId);
+        return Reference::to(self::componentPath('responses', $ref), $objectId);
     }
 
     public function summary(?string $summary): static

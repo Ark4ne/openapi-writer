@@ -16,6 +16,6 @@ final class MissingDependencyException extends LogicException implements OpenApi
      */
     public static function forPackage(string $package, string $feature): self
     {
-        return new self();
+        return new self(sprintf('%s is required to %s: composer require %s', $package, $feature, $package));
     }
 }

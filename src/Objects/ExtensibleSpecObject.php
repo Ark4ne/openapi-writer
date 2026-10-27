@@ -24,11 +24,38 @@ abstract class ExtensibleSpecObject extends SpecObject implements Extensible
      */
     public function x(string $name, mixed $value): static
     {
-        return clone $this;
+        $name = self::extensionName($name);
+
+        if ($name === 'x-') {
+            throw InvalidArgumentException::forField(static::class, 'x', 'an extension needs a name after "x-"');
+        }
+
+        $clone = clone $this;
+        $clone->extensions[$name] = $value;
+
+        return $clone;
     }
 
     public function withoutX(string $name): static
     {
-        return clone $this;
+        $clone = clone $this;
+        unset($clone->extensions[self::extensionName($name)]);
+
+        return $clone;
+    }
+
+    public function __get(string $name): mixed
+    {
+        return $name === 'extensions' ? $this->extensions : parent::__get($name);
+    }
+
+    public function __isset(string $name): bool
+    {
+        return $name === 'extensions' ? $this->extensions !== [] : parent::__isset($name);
+    }
+
+    private static function extensionName(string $name): string
+    {
+        return str_starts_with($name, 'x-') ? $name : 'x-' . $name;
     }
 }

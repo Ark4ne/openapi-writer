@@ -86,7 +86,7 @@ final class Parameter extends ExtensibleSpecObject implements ParameterContract
      */
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
-        return Reference::create($objectId);
+        return Reference::to(self::componentPath('parameters', $ref), $objectId);
     }
 
     public function name(?string $name): static
@@ -150,6 +150,8 @@ final class Parameter extends ExtensibleSpecObject implements ParameterContract
      */
     public function example(mixed $example): static
     {
+        $this->exclusiveOf('example', 'examples');
+
         return $this->with('example', $example);
     }
 
@@ -161,6 +163,8 @@ final class Parameter extends ExtensibleSpecObject implements ParameterContract
      */
     public function examples(ExampleContract ...$examples): static
     {
+        $this->exclusiveOf('examples', 'example');
+
         return $this->with('examples', $examples);
     }
 
@@ -172,6 +176,8 @@ final class Parameter extends ExtensibleSpecObject implements ParameterContract
      */
     public function addExamples(ExampleContract ...$examples): static
     {
+        $this->exclusiveOf('examples', 'example');
+
         return $this->withAdded('examples', $examples);
     }
 

@@ -6,6 +6,7 @@ namespace Ark4ne\OpenApiWriter\Objects;
 
 use Ark4ne\OpenApiWriter\Contracts\ParameterContract;
 use Ark4ne\OpenApiWriter\Contracts\PathItemContract;
+use Ark4ne\OpenApiWriter\Enums\HttpMethod;
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Exceptions\DuplicateObjectIdException;
 use Ark4ne\OpenApiWriter\Exceptions\MissingObjectIdException;
@@ -164,9 +165,24 @@ final class PathItem extends ExtensibleSpecObject implements PathItemContract
      * objectId is not a fixed field goes to `additionalOperations`.
      *
      * @throws MissingObjectIdException
+     * @throws DuplicateObjectIdException when a method is given twice or is already set
      */
     public function operations(Operation ...$operations): static
     {
-        return clone $this;
+        $pathItem = $this;
+
+        foreach ($operations as $operation) {
+            $method = $operation->objectId ?? throw MissingObjectIdException::forField(self::class, 'operations');
+
+            if (HttpMethod::tryFrom($method) === null) {
+                $pathItem = $pathItem->withAdded('additionalOperations', [$operation]);
+            } elseif ($pathItem->has($method)) {
+                throw DuplicateObjectIdException::forField(self::class, $method, $method);
+            } else {
+                $pathItem = $pathItem->with($method, $operation);
+            }
+        }
+
+        return $pathItem;
     }
 }

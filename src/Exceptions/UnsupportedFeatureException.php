@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Exceptions;
 
+use Ark4ne\OpenApiWriter\Serialization\Diagnostic;
 use Ark4ne\OpenApiWriter\Serialization\Diagnostics;
 use RuntimeException;
 
@@ -22,7 +23,16 @@ final class UnsupportedFeatureException extends RuntimeException implements Open
      */
     public static function fromDiagnostics(Diagnostics $diagnostics): self
     {
-        return new self('', $diagnostics);
+        $count = count($diagnostics);
+        $lines = array_map(
+            static fn(Diagnostic $diagnostic): string => sprintf('- %s: %s', $diagnostic->pointer->toString(), $diagnostic->message),
+            $diagnostics->all(),
+        );
+
+        return new self(
+            sprintf("%d %s cannot be written for this version:\n%s", $count, $count === 1 ? 'feature' : 'features', implode("\n", $lines)),
+            $diagnostics,
+        );
     }
 
     public function diagnostics(): Diagnostics

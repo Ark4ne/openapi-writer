@@ -4,18 +4,27 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Metadata;
 
+use BackedEnum;
+use ReflectionProperty;
+
 /**
  * The `#[Field]` declarations of one spec object class, in declaration order (= output order).
  */
 final readonly class ClassMetadata
 {
     /**
-     * @param class-string         $class
-     * @param array<string, Field> $fields keyed by property name
+     * @param class-string                                 $class
+     * @param array<string, Field>                         $fields     keyed by property name
+     * @param array<string, ReflectionProperty>            $properties the property of each field
+     * @param array<string, class-string<BackedEnum>|null> $enums      the enum a field holds, if any
+     * @param array<string, bool>                          $freeValues whether a field takes any value (`mixed`), `null` included
      */
     public function __construct(
         public string $class,
         public array $fields,
+        private array $properties = [],
+        private array $enums = [],
+        private array $freeValues = [],
     ) {}
 
     public function field(string $property): ?Field
@@ -28,6 +37,37 @@ final readonly class ClassMetadata
      */
     public function outputName(string $property): string
     {
-        return '';
+        return $this->fields[$property]->name ?? $property;
+    }
+
+    /**
+     * The enum held by a field (`ParameterLocation` for `Parameter.in`), or null.
+     *
+     * @return class-string<BackedEnum>|null
+     */
+    public function enum(string $property): ?string
+    {
+        return $this->enums[$property] ?? null;
+    }
+
+    /**
+     * Whether a field takes any value (`default`, `example`, `const`…), where `null` is a value.
+     */
+    public function isFreeValue(string $property): bool
+    {
+        return $this->freeValues[$property] ?? false;
+    }
+
+    public function read(object $object, string $property): mixed
+    {
+        return $this->properties[$property]->getValue($object);
+    }
+
+    /**
+     * Writes a field of an object. Only `SpecObject::with()` and its siblings call it, on a fresh clone.
+     */
+    public function write(object $object, string $property, mixed $value): void
+    {
+        $this->properties[$property]->setValue($object, $value);
     }
 }

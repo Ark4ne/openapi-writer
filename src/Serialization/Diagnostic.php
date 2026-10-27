@@ -23,6 +23,6 @@ final readonly class Diagnostic implements Stringable
      */
     public function __toString(): string
     {
-        return '';
+        return sprintf('[%s] %s: %s', $this->level->value, $this->pointer->toString(), $this->message);
     }
 }

@@ -30,16 +30,22 @@ final readonly class Context
      */
     public function at(string|int ...$tokens): self
     {
-        return $this;
+        return new self($this->version, $this->strictness, $this->pointer->append(...$tokens), $this->diagnostics);
     }
 
     /**
      * Reports a conversion at the current pointer.
      */
-    public function converted(string $message): void {}
+    public function converted(string $message): void
+    {
+        $this->diagnostics->add(new Diagnostic(DiagnosticLevel::Converted, $this->pointer, $message));
+    }
 
     /**
      * Reports a feature the target version cannot express, at the current pointer.
      */
-    public function unsupported(string $message): void {}
+    public function unsupported(string $message): void
+    {
+        $this->diagnostics->add(new Diagnostic(DiagnosticLevel::Unsupported, $this->pointer, $message));
+    }
 }

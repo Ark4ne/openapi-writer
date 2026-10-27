@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Serialization\Rewriters;
 
+use Ark4ne\OpenApiWriter\Objects\Schema;
 use Ark4ne\OpenApiWriter\Objects\SpecObject;
 use Ark4ne\OpenApiWriter\Serialization\Context;
 
@@ -14,11 +15,17 @@ final class MultiTypeRewriter implements Rewriter
 {
     public function supports(SpecObject $object): bool
     {
-        return false;
+        return $object instanceof Schema && $object->has('type');
     }
 
     public function rewrite(SpecObject $object, array $node, Context $context): array
     {
+        $types = $node['type'] ?? null;
+
+        if (is_array($types) && count($types) === 1) {
+            $node['type'] = $types[0];
+        }
+
         return $node;
     }
 }

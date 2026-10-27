@@ -29,7 +29,7 @@ enum Version: string
 
     public function isAtLeast(self $version): bool
     {
-        return false;
+        return version_compare($this->value, $version->value, '>=');
     }
 
     /**
@@ -37,6 +37,6 @@ enum Version: string
      */
     public function line(): string
     {
-        return '';
+        return substr($this->value, 0, (int) strrpos($this->value, '.'));
     }
 }

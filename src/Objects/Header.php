@@ -52,7 +52,7 @@ final class Header extends ExtensibleSpecObject implements HeaderContract
      */
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
-        return Reference::create($objectId);
+        return Reference::to(self::componentPath('headers', $ref), $objectId);
     }
 
     public function description(?string $description): static
@@ -93,6 +93,8 @@ final class Header extends ExtensibleSpecObject implements HeaderContract
      */
     public function example(mixed $example): static
     {
+        $this->exclusiveOf('example', 'examples');
+
         return $this->with('example', $example);
     }
 
@@ -104,6 +106,8 @@ final class Header extends ExtensibleSpecObject implements HeaderContract
      */
     public function examples(ExampleContract ...$examples): static
     {
+        $this->exclusiveOf('examples', 'example');
+
         return $this->with('examples', $examples);
     }
 
@@ -115,6 +119,8 @@ final class Header extends ExtensibleSpecObject implements HeaderContract
      */
     public function addExamples(ExampleContract ...$examples): static
     {
+        $this->exclusiveOf('examples', 'example');
+
         return $this->withAdded('examples', $examples);
     }
 

@@ -33,11 +33,19 @@ final class License extends ExtensibleSpecObject
      */
     public function identifier(?string $identifier): static
     {
+        if ($identifier !== null) {
+            $this->exclusiveOf('identifier', 'url');
+        }
+
         return $this->with('identifier', $identifier);
     }
 
     public function url(?string $url): static
     {
+        if ($url !== null) {
+            $this->exclusiveOf('url', 'identifier');
+        }
+
         return $this->with('url', $url);
     }
 }

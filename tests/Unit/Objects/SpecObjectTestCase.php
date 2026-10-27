@@ -195,7 +195,13 @@ abstract class SpecObjectTestCase extends TestCase
             $object = self::call(static::emptyObject(), $field, $arguments);
 
             self::assertSame($expected, self::call($object, $field, $arguments)->__get($field), $field);
-            self::assertSame([...$expected, ...$expected], self::call($object, 'add' . ucfirst($field), $arguments)->__get($field), $field);
+
+            if (in_array($field, static::listsOfUniqueValues(), true)) {
+                self::assertThrows(InvalidArgumentException::class, static fn(): SpecObject => self::call($object, 'add' . ucfirst($field), $arguments), $field);
+            } else {
+                self::assertSame([...$expected, ...$expected], self::call($object, 'add' . ucfirst($field), $arguments)->__get($field), $field);
+            }
+
             self::assertSame($expected, $object->__get($field), 'The original object is unchanged.');
             $checked[] = $field;
         }
@@ -265,6 +271,17 @@ abstract class SpecObjectTestCase extends TestCase
     protected static function extensible(): bool
     {
         return true;
+    }
+
+    /**
+     * Lists whose values the specification requires to be unique in every version (`Schema.type`): their `add*`
+     * method rejects a value already present instead of appending it.
+     *
+     * @return list<string>
+     */
+    protected static function listsOfUniqueValues(): array
+    {
+        return [];
     }
 
     protected static function emptyObject(): SpecObject

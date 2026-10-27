@@ -168,4 +168,9 @@ final class OpenApi extends ExtensibleSpecObject implements JsonSerializable
     {
         return $this->toArray();
     }
+
+    protected function declaredVersion(): ?Version
+    {
+        return $this->openapi instanceof Version ? $this->openapi : null;
+    }
 }

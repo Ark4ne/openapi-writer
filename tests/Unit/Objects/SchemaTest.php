@@ -21,6 +21,11 @@ final class SchemaTest extends ExtensibleSpecObjectTestCase
         return Schema::class;
     }
 
+    protected static function listsOfUniqueValues(): array
+    {
+        return ['type'];
+    }
+
     public static function fields(): array
     {
         $address = Schema::object('Address');
