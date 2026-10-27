@@ -68,4 +68,25 @@ final class MediaTypeTest extends ExtensibleSpecObjectTestCase
         self::assertSame(1, MediaType::json()->examples()->example(1)->example);
         self::assertSame([], MediaType::json()->example(1)->examples()->examples);
     }
+
+    public function test_encoding_and_positional_encodings_together_are_rejected(): void
+    {
+        $part = Encoding::create('avatar')->contentType('image/png');
+        $item = Encoding::create()->contentType('image/png');
+
+        self::assertThrows(InvalidArgumentException::class, static fn(): MediaType => MediaType::multipart()->encoding($part)->prefixEncoding($item));
+        self::assertThrows(InvalidArgumentException::class, static fn(): MediaType => MediaType::multipart()->encoding($part)->addPrefixEncoding($item));
+        self::assertThrows(InvalidArgumentException::class, static fn(): MediaType => MediaType::multipart()->encoding($part)->itemEncoding($item));
+        self::assertThrows(InvalidArgumentException::class, static fn(): MediaType => MediaType::multipart()->prefixEncoding($item)->encoding($part));
+        self::assertThrows(InvalidArgumentException::class, static fn(): MediaType => MediaType::multipart()->itemEncoding($item)->addEncoding($part));
+    }
+
+    public function test_empty_encodings_do_not_exclude_each_other(): void
+    {
+        $item = Encoding::create()->contentType('image/png');
+
+        self::assertSame($item, MediaType::multipart()->encoding()->itemEncoding($item)->itemEncoding);
+        self::assertSame([$item], MediaType::multipart()->prefixEncoding()->encoding()->prefixEncoding($item)->prefixEncoding);
+        self::assertSame([], MediaType::multipart()->itemEncoding($item)->itemEncoding(null)->encoding()->encoding);
+    }
 }

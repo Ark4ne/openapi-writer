@@ -56,11 +56,18 @@ final class Example extends ExtensibleSpecObject implements ExampleContract
      */
     public function dataValue(mixed $dataValue): static
     {
+        $this->exclusiveOf('dataValue', 'value');
+
         return $this->with('dataValue', $dataValue);
     }
 
     public function serializedValue(?string $serializedValue): static
     {
+        if ($serializedValue !== null) {
+            $this->exclusiveOf('serializedValue', 'value');
+            $this->exclusiveOf('serializedValue', 'externalValue');
+        }
+
         return $this->with('serializedValue', $serializedValue);
     }
 
@@ -70,6 +77,8 @@ final class Example extends ExtensibleSpecObject implements ExampleContract
     public function value(mixed $value): static
     {
         $this->exclusiveOf('value', 'externalValue');
+        $this->exclusiveOf('value', 'dataValue');
+        $this->exclusiveOf('value', 'serializedValue');
 
         return $this->with('value', $value);
     }
@@ -78,6 +87,7 @@ final class Example extends ExtensibleSpecObject implements ExampleContract
     {
         if ($externalValue !== null) {
             $this->exclusiveOf('externalValue', 'value');
+            $this->exclusiveOf('externalValue', 'serializedValue');
         }
 
         return $this->with('externalValue', $externalValue);

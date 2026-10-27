@@ -9,7 +9,7 @@ document avec la liste de ses livrables ; le tableau ci-dessous en est calculé 
 ## Progression
 
 <!-- progress:start -->
-**Avancement global : `██████░░░░` 69 % (106 / 153 livrables)**
+**Avancement global : `███████░░░` 79 % (122 / 153 livrables)**
 
 | Jalon | Statut | Avancement | Livrables |
 | --- | --- | --- | --- |
@@ -18,7 +18,7 @@ document avec la liste de ses livrables ; le tableau ci-dessous en est calculé 
 | [M2 — Suite de tests complète](M2-tests.md) | Terminé | `██████████` 100 % | 17 / 17 |
 | [M3 — Objets et sérialisation 3.1](M3-objects-serialization-3.1.md) | Terminé | `██████████` 100 % | 22 / 22 |
 | [M4 — Adaptateur 3.0](M4-adapter-3.0.md) | Terminé | `██████████` 100 % | 23 / 23 |
-| [M5 — Adaptateur 3.2](M5-adapter-3.2.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 16 |
+| [M5 — Adaptateur 3.2](M5-adapter-3.2.md) | Terminé | `██████████` 100 % | 16 / 16 |
 | [M6 — Validation](M6-validation.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 18 |
 | [M7 — Version 1.0.0](M7-release-1.0.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 8 |
 <!-- progress:end -->

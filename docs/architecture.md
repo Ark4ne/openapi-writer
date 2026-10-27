@@ -150,8 +150,14 @@ dans les signatures.
 - `Responses` : une réponse d'`objectId` `default` va dans le champ `default`. `responses()` (qui remplace) la
   substitue à la précédente et garde celle-ci quand le nouvel ensemble n'en contient pas ; `addResponses()` (qui
   ajoute) lève `DuplicateObjectIdException` si le champ est déjà défini.
-- `PathItem::operations()` reconnaît une méthode fixe quelle que soit sa casse (`GET` → `get`).
-- Champs exclusifs (`example` / `examples`…) : une collection vide ne compte pas comme définie.
+- `PathItem::operations()` reconnaît une méthode fixe quelle que soit sa casse (`GET` → `get`) ;
+  `additionalOperations()` et `addAdditionalOperations()` la refusent, quelle que soit sa casse (`QUERY` compris).
+- Champs exclusifs, refusés à la construction dans toutes les versions : `License.url` / `identifier`,
+  `Link.operationRef` / `operationId`, `example` / `examples` (`Parameter`, `Header`, `MediaType`),
+  `Example.value` / `externalValue` / `dataValue` / `serializedValue` (`value` exclut les trois autres,
+  `serializedValue` exclut `externalValue`), `encoding` / `prefixEncoding` + `itemEncoding` (`MediaType`,
+  `Encoding`), `Xml.nodeType` / `attribute` + `wrapped`. Une collection vide ne compte pas comme définie.
+- `Xml::nodeType()` n'accepte que `element`, `attribute`, `text`, `cdata` et `none`.
 - `Schema::type()` sans argument retire le type.
 - `Operation::responses()` accepte un `Responses` ou des réponses qu'il enveloppe : c'est le seul setter qui ne se
   réduit pas à un appel de `with()`.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ark4ne\OpenApiWriter\Tests\Unit\Objects;
 
 use Ark4ne\OpenApiWriter\Exceptions\DuplicateObjectIdException;
+use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Exceptions\MissingObjectIdException;
 use Ark4ne\OpenApiWriter\Objects\Operation;
 use Ark4ne\OpenApiWriter\Objects\Parameter;
@@ -106,5 +107,11 @@ final class PathItemTest extends ExtensibleSpecObjectTestCase
 
         self::assertSame($get, $pathItem->get);
         self::assertFalse($pathItem->has('additionalOperations'));
+    }
+
+    public function test_additional_operations_rejects_a_fixed_method_whatever_its_case(): void
+    {
+        self::assertThrows(InvalidArgumentException::class, static fn(): PathItem => PathItem::create('/users')->additionalOperations(Operation::create('GET')));
+        self::assertThrows(InvalidArgumentException::class, static fn(): PathItem => PathItem::create('/users')->addAdditionalOperations(Operation::create('query')));
     }
 }

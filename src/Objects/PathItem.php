@@ -9,6 +9,7 @@ use Ark4ne\OpenApiWriter\Contracts\PathItemContract;
 use Ark4ne\OpenApiWriter\Enums\HttpMethod;
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Exceptions\DuplicateObjectIdException;
+use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Exceptions\MissingObjectIdException;
 use Ark4ne\OpenApiWriter\Metadata\Field;
 use Ark4ne\OpenApiWriter\Support\Undefined;
@@ -119,13 +120,17 @@ final class PathItem extends ExtensibleSpecObject implements PathItemContract
     }
 
     /**
-     * Operations of other HTTP methods, keyed by their objectId (the method name, e.g. `COPY`).
+     * Operations of other HTTP methods, keyed by their objectId (the method name, e.g. `COPY`). A fixed method,
+     * whatever its case, has its own field.
      *
      * @throws MissingObjectIdException
      * @throws DuplicateObjectIdException
+     * @throws InvalidArgumentException on a fixed method
      */
     public function additionalOperations(Operation ...$additionalOperations): static
     {
+        self::rejectFixedMethods($additionalOperations);
+
         return $this->with('additionalOperations', $additionalOperations);
     }
 
@@ -134,9 +139,12 @@ final class PathItem extends ExtensibleSpecObject implements PathItemContract
      *
      * @throws MissingObjectIdException
      * @throws DuplicateObjectIdException
+     * @throws InvalidArgumentException on a fixed method
      */
     public function addAdditionalOperations(Operation ...$additionalOperations): static
     {
+        self::rejectFixedMethods($additionalOperations);
+
         return $this->withAdded('additionalOperations', $additionalOperations);
     }
 
@@ -185,5 +193,21 @@ final class PathItem extends ExtensibleSpecObject implements PathItemContract
         }
 
         return $pathItem;
+    }
+
+    /**
+     * @param array<Operation> $operations
+     *
+     * @throws InvalidArgumentException
+     */
+    private static function rejectFixedMethods(array $operations): void
+    {
+        foreach ($operations as $operation) {
+            $method = HttpMethod::tryFrom(strtolower($operation->objectId ?? ''));
+
+            if ($method !== null) {
+                throw InvalidArgumentException::forField(self::class, 'additionalOperations', sprintf('%s is a fixed method, set it with %s()', $operation->objectId, $method->value));
+            }
+        }
     }
 }

@@ -94,6 +94,8 @@ final class Encoding extends ExtensibleSpecObject
      */
     public function encoding(Encoding ...$encoding): static
     {
+        $this->exclusiveOfPositionalEncodings($encoding);
+
         return $this->with('encoding', $encoding);
     }
 
@@ -105,21 +107,49 @@ final class Encoding extends ExtensibleSpecObject
      */
     public function addEncoding(Encoding ...$encoding): static
     {
+        $this->exclusiveOfPositionalEncodings($encoding);
+
         return $this->withAdded('encoding', $encoding);
     }
 
     public function prefixEncoding(Encoding ...$prefixEncoding): static
     {
+        if ($prefixEncoding !== []) {
+            $this->exclusiveOf('prefixEncoding', 'encoding');
+        }
+
         return $this->with('prefixEncoding', $prefixEncoding);
     }
 
     public function addPrefixEncoding(Encoding ...$prefixEncoding): static
     {
+        if ($prefixEncoding !== []) {
+            $this->exclusiveOf('prefixEncoding', 'encoding');
+        }
+
         return $this->withAdded('prefixEncoding', $prefixEncoding);
     }
 
     public function itemEncoding(?Encoding $itemEncoding): static
     {
+        if ($itemEncoding !== null) {
+            $this->exclusiveOf('itemEncoding', 'encoding');
+        }
+
         return $this->with('itemEncoding', $itemEncoding);
+    }
+
+    /**
+     * `encoding` names the parts of a form, `prefixEncoding` and `itemEncoding` the items of a sequence: both kinds
+     * cannot be set together.
+     *
+     * @param array<Encoding> $encoding
+     */
+    private function exclusiveOfPositionalEncodings(array $encoding): void
+    {
+        if ($encoding !== []) {
+            $this->exclusiveOf('encoding', 'prefixEncoding');
+            $this->exclusiveOf('encoding', 'itemEncoding');
+        }
     }
 }

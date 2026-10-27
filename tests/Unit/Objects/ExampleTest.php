@@ -39,4 +39,26 @@ final class ExampleTest extends ExtensibleSpecObjectTestCase
         self::assertTrue($example->has('value'));
         self::assertNull($example->value);
     }
+
+    public function test_value_and_data_value_or_serialized_value_together_are_rejected(): void
+    {
+        self::assertThrows(InvalidArgumentException::class, static fn(): Example => Example::create()->value(1)->dataValue(1));
+        self::assertThrows(InvalidArgumentException::class, static fn(): Example => Example::create()->dataValue(1)->value(1));
+        self::assertThrows(InvalidArgumentException::class, static fn(): Example => Example::create()->value(1)->serializedValue('1'));
+        self::assertThrows(InvalidArgumentException::class, static fn(): Example => Example::create()->serializedValue('1')->value(1));
+    }
+
+    public function test_serialized_value_and_external_value_together_are_rejected(): void
+    {
+        self::assertThrows(InvalidArgumentException::class, static fn(): Example => Example::create()->serializedValue('1')->externalValue('https://example.com/one.txt'));
+        self::assertThrows(InvalidArgumentException::class, static fn(): Example => Example::create()->externalValue('https://example.com/one.txt')->serializedValue('1'));
+    }
+
+    public function test_data_value_goes_with_serialized_value_or_external_value(): void
+    {
+        $example = Example::create()->dataValue(1)->serializedValue('1');
+
+        self::assertSame('1', $example->serializedValue);
+        self::assertSame('https://example.com/one.txt', Example::create()->dataValue(1)->externalValue('https://example.com/one.txt')->externalValue);
+    }
 }
