@@ -7,7 +7,6 @@ namespace Ark4ne\OpenApiWriter\Serialization;
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Enums\VersionedEnum;
 use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
-use Ark4ne\OpenApiWriter\Metadata\ClassMetadata;
 use Ark4ne\OpenApiWriter\Metadata\Field;
 use Ark4ne\OpenApiWriter\Metadata\MetadataFactory;
 use Ark4ne\OpenApiWriter\Objects\ExtensibleSpecObject;
@@ -23,8 +22,7 @@ use stdClass;
  * target version (`since` / `until`, VersionedEnum) and reports them, then hands each node to the rewriters.
  * Empty objects and maps are written as `\stdClass`, so that JSON writes `{}` and never `[]`. It holds no version rule of its own.
  *
- * Keys are written in the order of the fields, whatever the rewriters did: patterned entries take the place of their
- * field, extensions come last.
+ * Keys are written in the order of the fields, whatever the rewriters did (`ClassMetadata::rank()`).
  */
 final readonly class Normalizer
 {
@@ -49,6 +47,10 @@ final readonly class Normalizer
         $metadata = MetadataFactory::for($object::class);
 
         foreach (array_keys($metadata->fields) as $property) {
+            if ($metadata->enum($property) === null) {
+                continue;
+            }
+
             $value = $metadata->read($object, $property);
 
             if ($value instanceof VersionedEnum && $value instanceof BackedEnum && !$context->version->isAtLeast($value->since())) {
@@ -102,7 +104,10 @@ final readonly class Normalizer
             }
         }
 
-        return self::ordered($metadata, $this->rewriters->rewrite($object, $node, $context));
+        $node = $this->rewriters->rewrite($object, $node, $context);
+        uksort($node, static fn(int|string $a, int|string $b): int => $metadata->rank($a) <=> $metadata->rank($b));
+
+        return $node;
     }
 
     /**
@@ -138,7 +143,8 @@ final readonly class Normalizer
         }
 
         if ($map) {
-            return $items === [] ? new stdClass() : $items;
+            // PHP turns numeric keys into integers: a map keyed "0", "1"… would otherwise be written as a JSON list.
+            return $items === [] || array_is_list($items) ? (object) $items : $items;
         }
 
         return array_values($items);
@@ -146,7 +152,7 @@ final readonly class Normalizer
 
     /**
      * A free value (`default`, `example`, an extension…) is written as given, once checked that JSON and YAML can
-     * write it.
+     * write it. A JsonSerializable is replaced by its data, so that both formats write the same thing.
      *
      * @throws InvalidArgumentException
      */
@@ -156,13 +162,21 @@ final readonly class Normalizer
             throw InvalidArgumentException::forValue($context->pointer, sprintf('%s cannot be written', is_nan($value) ? 'NAN' : 'INF'));
         }
 
-        if (is_array($value)) {
-            foreach ($value as $key => $item) {
-                $this->free($item, $context->at($key));
-            }
+        if ($value instanceof JsonSerializable) {
+            return $this->free($value->jsonSerialize(), $context);
         }
 
-        if (is_resource($value) || (is_object($value) && !$value instanceof stdClass && !$value instanceof JsonSerializable)) {
+        if (is_array($value) || $value instanceof stdClass) {
+            $items = [];
+
+            foreach (is_array($value) ? $value : get_object_vars($value) as $key => $item) {
+                $items[$key] = $this->free($item, $context->at($key));
+            }
+
+            return is_array($value) ? $items : (object) $items;
+        }
+
+        if (is_resource($value) || is_object($value)) {
             throw InvalidArgumentException::forValue($context->pointer, sprintf('a value of type %s cannot be written', get_debug_type($value)));
         }
 
@@ -180,30 +194,5 @@ final readonly class Normalizer
         return $field->since !== null
             ? sprintf('%s needs %s', $name, $field->since->value)
             : sprintf('%s is not available after %s', $name, $field->until?->value);
-    }
-
-    /**
-     * Sorts the keys in the order of the fields (stable sort): patterned entries at the place of their field,
-     * unknown keys after the fields, extensions last.
-     *
-     * @param array<string, mixed> $node
-     *
-     * @return array<string, mixed>
-     */
-    private static function ordered(ClassMetadata $metadata, array $node): array
-    {
-        $ranks = [];
-        $patterned = null;
-
-        foreach ($metadata->fields as $property => $field) {
-            $ranks[$metadata->outputName($property)] = count($ranks);
-            $patterned = $field->patterned ? count($ranks) - 1 : $patterned;
-        }
-
-        $rank = static fn(int|string $key): int => $ranks[$key]
-            ?? (str_starts_with((string) $key, 'x-') ? PHP_INT_MAX : ($patterned ?? PHP_INT_MAX - 1));
-        uksort($node, static fn(int|string $a, int|string $b): int => $rank($a) <=> $rank($b));
-
-        return $node;
     }
 }

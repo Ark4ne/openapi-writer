@@ -161,8 +161,8 @@ final class PathItem extends ExtensibleSpecObject implements PathItemContract
     }
 
     /**
-     * Places each operation under the field named by its objectId (`Operation::get()` → `get`); an operation whose
-     * objectId is not a fixed field goes to `additionalOperations`.
+     * Places each operation under the field named by its objectId, whatever its case (`Operation::get()` → `get`); an
+     * operation whose objectId is not a fixed method goes to `additionalOperations`.
      *
      * @throws MissingObjectIdException
      * @throws DuplicateObjectIdException when a method is given twice or is already set
@@ -172,7 +172,8 @@ final class PathItem extends ExtensibleSpecObject implements PathItemContract
         $pathItem = $this;
 
         foreach ($operations as $operation) {
-            $method = $operation->objectId ?? throw MissingObjectIdException::forField(self::class, 'operations');
+            $objectId = $operation->objectId ?? throw MissingObjectIdException::forField(self::class, 'operations');
+            $method = strtolower($objectId);
 
             if (HttpMethod::tryFrom($method) === null) {
                 $pathItem = $pathItem->withAdded('additionalOperations', [$operation]);

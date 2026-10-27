@@ -147,8 +147,12 @@ dans les signatures.
   méthodes. `objectId` manquant → `MissingObjectIdException`. Un `objectId` déjà présent → `DuplicateObjectIdException`,
   avec `add*` comme avec le setter : on ne remplace jamais une entrée en silence.
 - Les deux méthodes passent par la base : `with('servers', $items)` et `withAdded('servers', $items)`.
-- `Responses` : une réponse d'`objectId` `default` passée à `responses()` va dans le champ `default` ; si celui-ci
-  est déjà défini, `DuplicateObjectIdException`.
+- `Responses` : une réponse d'`objectId` `default` va dans le champ `default`. `responses()` (qui remplace) la
+  substitue à la précédente et garde celle-ci quand le nouvel ensemble n'en contient pas ; `addResponses()` (qui
+  ajoute) lève `DuplicateObjectIdException` si le champ est déjà défini.
+- `PathItem::operations()` reconnaît une méthode fixe quelle que soit sa casse (`GET` → `get`).
+- Champs exclusifs (`example` / `examples`…) : une collection vide ne compte pas comme définie.
+- `Schema::type()` sans argument retire le type.
 - `Operation::responses()` accepte un `Responses` ou des réponses qu'il enveloppe : c'est le seul setter qui ne se
   réduit pas à un appel de `with()`.
 - **Exception : maps de valeurs scalaires** (`Link.parameters`, `Discriminator.mapping`, `OAuthFlow.scopes`,
@@ -189,12 +193,17 @@ Pour chaque objet, le `Normalizer` :
 3. écrit un objet ou une map vide en `\stdClass` (donc `{}` en JSON, jamais `[]`), y compris dans `toArray()` ;
    les rewriters respectent la même convention ;
 4. passe le nœud obtenu à la `RewriterChain` ;
-5. remet les clés du nœud réécrit dans l'ordre des champs (tri stable) : les entrées d'un champ « patterned » à la
-   place de ce champ, les clés inconnues ensuite, les extensions en dernier. Un rewriter n'a donc pas à placer
-   les clés qu'il ajoute (`anyOf` à la place d'un `$ref`…).
+5. remet les clés du nœud réécrit dans l'ordre des champs (tri stable, rang précalculé par `ClassMetadata::rank()`) :
+   les entrées d'un champ « patterned » à la place de ce champ, les clés inconnues ensuite, les extensions en
+   dernier. Un rewriter n'a donc pas à placer les clés qu'il ajoute (`anyOf` à la place d'un `$ref`…).
 
-Une valeur libre (`default`, `example`, extensions…) est écrite telle quelle, après vérification : `NAN`, `INF`, une
-ressource ou un objet non sérialisable lèvent une `InvalidArgumentException` qui porte le JSON Pointer de la valeur.
+Une map non vide dont les clés forment une liste (`"0"`, `"1"`…, que PHP convertit en entiers) est écrite en
+`\stdClass`, comme une map vide : JSON en fait un objet, jamais un tableau.
+
+Une valeur libre (`default`, `example`, extensions…) est écrite telle quelle, après vérification récursive (tableaux
+et `\stdClass`) : un `JsonSerializable` est remplacé par ses données, pour que JSON et YAML écrivent la même chose ;
+`NAN`, `INF`, une ressource ou un autre objet lèvent une `InvalidArgumentException` qui porte le JSON Pointer de la
+valeur.
 
 Le `Normalizer` ne contient **aucune** règle propre à une version.
 

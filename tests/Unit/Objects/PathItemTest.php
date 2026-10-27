@@ -97,4 +97,14 @@ final class PathItemTest extends ExtensibleSpecObjectTestCase
 
         PathItem::create('/users')->operations(Operation::get(), Operation::get()->summary('again'));
     }
+
+    public function test_operations_finds_a_fixed_method_whatever_its_case(): void
+    {
+        $get = Operation::create('GET');
+
+        $pathItem = PathItem::create('/users')->operations($get);
+
+        self::assertSame($get, $pathItem->get);
+        self::assertFalse($pathItem->has('additionalOperations'));
+    }
 }

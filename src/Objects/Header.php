@@ -106,7 +106,9 @@ final class Header extends ExtensibleSpecObject implements HeaderContract
      */
     public function examples(ExampleContract ...$examples): static
     {
-        $this->exclusiveOf('examples', 'example');
+        if ($examples !== []) {
+            $this->exclusiveOf('examples', 'example');
+        }
 
         return $this->with('examples', $examples);
     }
@@ -119,7 +121,9 @@ final class Header extends ExtensibleSpecObject implements HeaderContract
      */
     public function addExamples(ExampleContract ...$examples): static
     {
-        $this->exclusiveOf('examples', 'example');
+        if ($examples !== []) {
+            $this->exclusiveOf('examples', 'example');
+        }
 
         return $this->withAdded('examples', $examples);
     }

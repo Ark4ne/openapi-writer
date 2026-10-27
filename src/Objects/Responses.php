@@ -33,14 +33,14 @@ final class Responses extends ExtensibleSpecObject
     }
 
     /**
-     * Keyed by the objectId of each response: a status code (`200`) or range (`2XX`). A response whose objectId is `default` goes to the `default` field; it throws DuplicateObjectIdException when that field is already set.
+     * Keyed by the objectId of each response: a status code (`200`) or range (`2XX`). A response whose objectId is `default` replaces the `default` field; without one, that field is kept.
      *
      * @throws MissingObjectIdException
      * @throws DuplicateObjectIdException
      */
     public function responses(ResponseContract ...$responses): static
     {
-        [$default, $responses] = $this->split($responses);
+        [$default, $responses] = $this->split($responses, true);
         $updated = $responses === [] ? $this->without('responses') : $this->with('responses', $responses);
 
         return $default === null ? $updated : $updated->with('default', $default);
@@ -54,7 +54,7 @@ final class Responses extends ExtensibleSpecObject
      */
     public function addResponses(ResponseContract ...$responses): static
     {
-        [$default, $responses] = $this->split($responses);
+        [$default, $responses] = $this->split($responses, false);
         $updated = $responses === [] ? $this : $this->withAdded('responses', $responses);
 
         return $default === null ? $updated : $updated->with('default', $default);
@@ -64,12 +64,13 @@ final class Responses extends ExtensibleSpecObject
      * Separates the response whose objectId is `default` from the others.
      *
      * @param array<array-key, ResponseContract> $responses
+     * @param bool                               $replace   whether the default response may replace the one already set
      *
      * @return array{ResponseContract|null, list<ResponseContract>}
      *
-     * @throws DuplicateObjectIdException when the default response is given twice or is already set
+     * @throws DuplicateObjectIdException when the default response is given twice, or is already set and not replaced
      */
-    private function split(array $responses): array
+    private function split(array $responses, bool $replace): array
     {
         $default = null;
         $others = [];
@@ -77,7 +78,7 @@ final class Responses extends ExtensibleSpecObject
         foreach ($responses as $response) {
             if (!$response instanceof SpecObject || $response->objectId !== 'default') {
                 $others[] = $response;
-            } elseif ($default !== null || $this->has('default')) {
+            } elseif ($default !== null || (!$replace && $this->has('default'))) {
                 throw DuplicateObjectIdException::forField(self::class, 'default', 'default');
             } else {
                 $default = $response;

@@ -27,12 +27,13 @@ final class MediaTypeReferenceRewriter implements Rewriter
     public function rewrite(SpecObject $object, array $node, Context $context): array
     {
         $content = $node['content'] ?? null;
+        $entries = $object->__get('content');
 
-        if ($context->version->isAtLeast(Version::V3_2_0) || !is_array($content) || !($object instanceof Parameter || $object instanceof Header || $object instanceof RequestBody || $object instanceof Response)) {
+        if ($context->version->isAtLeast(Version::V3_2_0) || !is_array($content) || !is_array($entries)) {
             return $node;
         }
 
-        foreach ($object->content ?? [] as $mediaType => $entry) {
+        foreach ($entries as $mediaType => $entry) {
             if ($entry instanceof Reference) {
                 unset($content[$mediaType]);
                 $context->at('content', $mediaType)->unsupported('a Reference to a Media Type needs 3.2.0');

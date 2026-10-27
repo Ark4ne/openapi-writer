@@ -1,0 +1,34 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Pet": {
+                "description": "A cat or a dog",
+                "anyOf": [
+                    {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Cat"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Dog"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "nullable": true,
+                        "enum": [
+                            null
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

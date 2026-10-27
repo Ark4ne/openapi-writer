@@ -1,0 +1,9 @@
+{
+    "type": "object",
+    "example": {
+        "name": "Alice",
+        "tags": {
+            "role": "admin"
+        }
+    }
+}

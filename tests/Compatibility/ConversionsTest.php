@@ -102,6 +102,10 @@ final class ConversionsTest extends TestCase
                 static fn(): OpenApi => self::schemas(Schema::ref('User', 'Owner')->description('The owner, if any')->nullable(true)),
                 ['3.0' => [$schema . 'Owner'], '3.1' => [$schema . 'Owner'], '3.2' => [$schema . 'Owner']],
             ],
+            'nullable-without-type' => [
+                static fn(): OpenApi => self::schemas(Schema::create('Pet')->description('A cat or a dog')->oneOf(Schema::ref('Cat'), Schema::ref('Dog'))->nullable(true)),
+                ['3.0' => [$schema . 'Pet'], '3.1' => [$schema . 'Pet'], '3.2' => [$schema . 'Pet']],
+            ],
             'base64-binary-content' => [
                 static fn(): OpenApi => self::schemas(Schema::string('Photo')->contentMediaType('image/png')->contentEncoding('base64')),
                 ['3.0' => [$schema . 'Photo'], '3.1' => [], '3.2' => []],

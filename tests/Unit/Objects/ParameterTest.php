@@ -85,4 +85,10 @@ final class ParameterTest extends ExtensibleSpecObjectTestCase
         self::assertThrows(InvalidArgumentException::class, static fn(): Parameter => Parameter::query('page')->example(1)->examples(Example::create('first')->value(1)));
         self::assertThrows(InvalidArgumentException::class, static fn(): Parameter => Parameter::query('page')->examples(Example::create('first')->value(1))->example(1));
     }
+
+    public function test_empty_examples_do_not_exclude_example(): void
+    {
+        self::assertSame(1, Parameter::query('page')->examples()->example(1)->example);
+        self::assertSame([], Parameter::query('page')->example(1)->examples()->examples);
+    }
 }

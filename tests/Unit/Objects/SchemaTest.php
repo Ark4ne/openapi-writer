@@ -225,4 +225,9 @@ final class SchemaTest extends ExtensibleSpecObjectTestCase
 
         $build();
     }
+
+    public function test_type_without_argument_removes_the_type(): void
+    {
+        self::assertFalse(Schema::string()->type()->has('type'));
+    }
 }

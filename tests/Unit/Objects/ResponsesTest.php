@@ -64,4 +64,22 @@ final class ResponsesTest extends ExtensibleSpecObjectTestCase
 
         self::assertSame([404, 200, '5XX'], array_keys($responses->responses ?? []));
     }
+
+    public function test_responses_replaces_the_default_response_with_the_one_of_the_new_set(): void
+    {
+        $error = Response::create('default')->description('New error');
+
+        $responses = Responses::create()->responses(Response::create('default')->description('Old error'))->responses($error, Response::ok());
+
+        self::assertSame($error, $responses->default);
+    }
+
+    public function test_responses_keeps_the_default_field_when_the_new_set_has_none(): void
+    {
+        $error = Response::create('default')->description('Unexpected error');
+
+        $responses = Responses::create()->responses($error)->responses(Response::ok());
+
+        self::assertSame($error, $responses->default);
+    }
 }

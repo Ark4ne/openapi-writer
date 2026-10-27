@@ -17,7 +17,9 @@ use Ark4ne\OpenApiWriter\Objects\Schema;
 use Ark4ne\OpenApiWriter\Serialization\Encoders\JsonEncoder;
 use Ark4ne\OpenApiWriter\Tests\Support\Fixtures;
 use Ark4ne\OpenApiWriter\Tests\TestCase;
+use JsonSerializable;
 use stdClass;
+use Symfony\Component\Yaml\Yaml;
 use Throwable;
 
 /**
@@ -117,5 +119,41 @@ final class FacadeTest extends TestCase
         return OpenApi::create()
             ->info(Info::create()->title('Users API')->version('1.0.0'))
             ->paths(PathItem::create('/users')->get(Operation::get()->operationId('listUsers')->responses(Response::ok())));
+    }
+
+    public function test_a_map_whose_keys_look_like_a_list_stays_a_json_object(): void
+    {
+        self::assertSerializesTo(Schema::object()->properties(Schema::string('0'), Schema::string('1')), Version::V3_1_2, 'serializer/numeric-keys');
+    }
+
+    public function test_a_json_serializable_free_value_is_written_as_its_data_in_json_and_yaml(): void
+    {
+        $value = new class implements JsonSerializable {
+            /**
+             * @return array<string, mixed>
+             */
+            public function jsonSerialize(): array
+            {
+                return ['name' => 'Alice', 'tags' => (object) ['role' => 'admin']];
+            }
+        };
+        $schema = Schema::object()->example($value);
+
+        self::assertSerializesTo($schema, Version::V3_1_2, 'serializer/json-serializable-value');
+        self::assertEquals(json_decode($schema->toJson(), true), Yaml::parse($schema->toYaml()));
+    }
+
+    public function test_a_value_that_json_cannot_write_inside_an_object_throws_with_its_pointer(): void
+    {
+        try {
+            Schema::number()->default((object) ['bounds' => [NAN]])->toJson();
+        } catch (Throwable $exception) {
+            self::assertInstanceOf(OpenApiWriterException::class, $exception);
+            self::assertStringContainsString('/default/bounds/0', $exception->getMessage());
+
+            return;
+        }
+
+        self::fail('Expected an exception for a NAN nested in a default value.');
     }
 }

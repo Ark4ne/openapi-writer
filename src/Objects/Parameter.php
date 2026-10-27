@@ -163,7 +163,9 @@ final class Parameter extends ExtensibleSpecObject implements ParameterContract
      */
     public function examples(ExampleContract ...$examples): static
     {
-        $this->exclusiveOf('examples', 'example');
+        if ($examples !== []) {
+            $this->exclusiveOf('examples', 'example');
+        }
 
         return $this->with('examples', $examples);
     }
@@ -176,7 +178,9 @@ final class Parameter extends ExtensibleSpecObject implements ParameterContract
      */
     public function addExamples(ExampleContract ...$examples): static
     {
-        $this->exclusiveOf('examples', 'example');
+        if ($examples !== []) {
+            $this->exclusiveOf('examples', 'example');
+        }
 
         return $this->withAdded('examples', $examples);
     }

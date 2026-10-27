@@ -10,24 +10,41 @@ use Ark4ne\OpenApiWriter\Objects\SpecObject;
 use Ark4ne\OpenApiWriter\Serialization\Context;
 
 /**
- * `nullable()` on a `$ref` or without type: `anyOf: [{$ref}, {type: object, nullable: true, enum: [null]}]` in 3.0, `anyOf: [{$ref}, {type: "null"}]` from 3.1.
+ * `nullable()` without type (a `$ref`, a composition…): the keywords that constrain the value move to the first branch
+ * of `anyOf: [{…}, {type: object, nullable: true, enum: [null]}]` in 3.0, `anyOf: [{…}, {type: "null"}]` from 3.1;
+ * annotations (`description`, `example`…), identifiers and extensions stay outside. A schema made of annotations only
+ * already accepts `null` and is left as is.
  */
 final class NullableWithoutTypeRewriter implements Rewriter
 {
+    /**
+     * Keywords that stay next to `anyOf`: they do not constrain the value.
+     */
+    private const OUTSIDE = [
+        '$schema', '$id', '$anchor', '$dynamicAnchor', '$defs', '$comment', 'title', 'description', 'default',
+        'readOnly', 'writeOnly', 'xml', 'externalDocs', 'example', 'examples', 'deprecated',
+    ];
+
     public function supports(SpecObject $object): bool
     {
-        return $object instanceof Schema && $object->nullable === true && !$object->has('type') && $object->has('ref');
+        return $object instanceof Schema && $object->nullable === true && !$object->has('type');
     }
 
     public function rewrite(SpecObject $object, array $node, Context $context): array
     {
-        if (!$context->version->isAtLeast(Version::V3_1_0) || isset($node['anyOf'])) {
+        $branch = array_filter(
+            $node,
+            static fn(string $key): bool => !in_array($key, self::OUTSIDE, true) && !str_starts_with($key, 'x-'),
+            ARRAY_FILTER_USE_KEY,
+        );
+
+        if (!$context->version->isAtLeast(Version::V3_1_0) || $branch === []) {
             return $node;
         }
 
-        $node['anyOf'] = [['$ref' => $node['$ref'] ?? null], ['type' => 'null']];
-        unset($node['$ref']);
-        $context->converted('nullable $ref written as anyOf: [{$ref}, {type: "null"}]');
+        $node = array_diff_key($node, $branch);
+        $node['anyOf'] = [$branch, ['type' => 'null']];
+        $context->converted('nullable without type written as anyOf: [{…}, {type: "null"}]');
 
         return $node;
     }

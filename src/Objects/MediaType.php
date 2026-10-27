@@ -113,7 +113,9 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
      */
     public function examples(ExampleContract ...$examples): static
     {
-        $this->exclusiveOf('examples', 'example');
+        if ($examples !== []) {
+            $this->exclusiveOf('examples', 'example');
+        }
 
         return $this->with('examples', $examples);
     }
@@ -126,7 +128,9 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
      */
     public function addExamples(ExampleContract ...$examples): static
     {
-        $this->exclusiveOf('examples', 'example');
+        if ($examples !== []) {
+            $this->exclusiveOf('examples', 'example');
+        }
 
         return $this->withAdded('examples', $examples);
     }

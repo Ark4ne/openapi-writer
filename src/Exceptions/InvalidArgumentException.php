@@ -19,7 +19,7 @@ final class InvalidArgumentException extends \InvalidArgumentException implement
      */
     public static function forField(string $class, string $field, string $reason): self
     {
-        return new self(sprintf('%s::%s: %s', self::shortName($class), $field, $reason));
+        return new self(sprintf('%s::%s: %s', ClassName::short($class), $field, $reason));
     }
 
     /**
@@ -49,13 +49,5 @@ final class InvalidArgumentException extends \InvalidArgumentException implement
     public static function forValue(JsonPointer $pointer, string $reason): self
     {
         return new self(sprintf('%s: %s', $pointer->toString(), $reason));
-    }
-
-    /**
-     * @param class-string $class
-     */
-    private static function shortName(string $class): string
-    {
-        return substr((string) strrchr('\\' . $class, '\\'), 1);
     }
 }

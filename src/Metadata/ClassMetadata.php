@@ -13,6 +13,13 @@ use ReflectionProperty;
 final readonly class ClassMetadata
 {
     /**
+     * @var array<string, int> position of each output name
+     */
+    private array $ranks;
+
+    private ?int $patternedRank;
+
+    /**
      * @param class-string                                 $class
      * @param array<string, Field>                         $fields     keyed by property name
      * @param array<string, ReflectionProperty>            $properties the property of each field
@@ -25,7 +32,18 @@ final readonly class ClassMetadata
         private array $properties = [],
         private array $enums = [],
         private array $freeValues = [],
-    ) {}
+    ) {
+        $ranks = [];
+        $patternedRank = null;
+
+        foreach ($fields as $property => $field) {
+            $patternedRank = $field->patterned ? count($ranks) : $patternedRank;
+            $ranks[$field->name ?? $property] = count($ranks);
+        }
+
+        $this->ranks = $ranks;
+        $this->patternedRank = $patternedRank;
+    }
 
     public function field(string $property): ?Field
     {
@@ -38,6 +56,16 @@ final readonly class ClassMetadata
     public function outputName(string $property): string
     {
         return $this->fields[$property]->name ?? $property;
+    }
+
+    /**
+     * Position of a key in the output: the order of the fields; the entries of a patterned field at the place of that
+     * field, unknown keys after the fields, extensions last.
+     */
+    public function rank(int|string $key): int
+    {
+        return $this->ranks[$key]
+            ?? (str_starts_with((string) $key, 'x-') ? PHP_INT_MAX : ($this->patternedRank ?? PHP_INT_MAX - 1));
     }
 
     /**

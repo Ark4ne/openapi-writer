@@ -318,13 +318,14 @@ final class Schema extends ExtensibleSpecObject implements SchemaContract
     }
 
     /**
-     * Several types are written as `anyOf` in 3.0; `SchemaType::Null` is converted too.
+     * Several types are written as `anyOf` in 3.0; `SchemaType::Null` is converted too. Without argument, removes the
+     * type.
      *
      * @throws InvalidArgumentException when a string is not a SchemaType value, or a type is given twice
      */
     public function type(SchemaType|string ...$type): static
     {
-        return $this->with('type', self::types([], $type));
+        return $this->with('type', $type === [] ? null : self::types([], $type));
     }
 
     /**

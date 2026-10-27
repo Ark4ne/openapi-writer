@@ -146,13 +146,13 @@ abstract class SpecObject
 
     /**
      * Guards a field that the specification forbids next to another one in every version (`value` and
-     * `externalValue`…): setting it while the other is set throws.
+     * `externalValue`…): setting it while the other is set throws. An empty collection does not count as set.
      *
      * @throws InvalidArgumentException when $other is set
      */
     protected function exclusiveOf(string $field, string $other): void
     {
-        if ($this->has($other)) {
+        if ($this->has($other) && $this->__get($other) !== []) {
             throw InvalidArgumentException::forField(static::class, $field, sprintf('%s and %s are mutually exclusive', $other, $field));
         }
     }

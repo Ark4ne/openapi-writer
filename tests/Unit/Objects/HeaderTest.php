@@ -42,4 +42,10 @@ final class HeaderTest extends ExtensibleSpecObjectTestCase
         self::assertThrows(InvalidArgumentException::class, static fn(): Header => Header::create()->example(1)->examples(Example::create('low')->value(1)));
         self::assertThrows(InvalidArgumentException::class, static fn(): Header => Header::create()->examples(Example::create('low')->value(1))->example(1));
     }
+
+    public function test_empty_examples_do_not_exclude_example(): void
+    {
+        self::assertSame(1, Header::create()->examples()->example(1)->example);
+        self::assertSame([], Header::create()->example(1)->examples()->examples);
+    }
 }

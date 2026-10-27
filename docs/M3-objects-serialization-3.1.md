@@ -52,3 +52,7 @@ plus proche du modèle (JSON Schema 2020-12).
 - L'exclusion PHPStan `throws.unusedType` ne couvre plus que `src/Validation/`, encore neutre jusqu'au M6.
 - Couverture de lignes du code livré (hors `Validation`) : 96,9 %. Restent rouges : les cas 3.0 (M4) et la suite
   Validation (M6).
+- Revue de code appliquée : maps à clés numériques écrites en objet, `nullable` sans type converti en
+  `anyOf: [{…}, {type: "null"}]` (annotations à l'extérieur, nouvelle ligne `nullable-without-type` de la matrice),
+  valeurs libres `JsonSerializable` et `\stdClass` vérifiées et résolues, `type()` sans argument, méthodes HTTP sans
+  casse, collections vides dans les champs exclusifs, `default` remplacé par `responses()`, rang des clés en cache.
