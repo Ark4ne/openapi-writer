@@ -19,7 +19,7 @@ final readonly class Diagnostic implements Stringable
     ) {}
 
     /**
-     * `[unsupported] /webhooks: webhooks are not available before 3.1.0`.
+     * `[unsupported] /webhooks: webhooks needs 3.1.0`.
      */
     public function __toString(): string
     {

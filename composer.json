@@ -58,6 +58,7 @@
             "@test"
         ],
         "progress": "php bin/progress.php",
+        "benchmark": "php bin/benchmark.php",
         "fixtures:update": [
             "@putenv OPENAPI_WRITER_UPDATE_FIXTURES=1",
             "phpunit"
@@ -71,6 +72,7 @@
         "cs:fix": "Fix the code style (PER-CS).",
         "mutation": "Run mutation testing (requires infection to be installed globally).",
         "ci": "Run every blocking check of the CI locally.",
+        "benchmark": "Build and write a document of 500 operations, and print the timings.",
         "progress": "Rebuild the progress table of docs/README.md from the milestone checklists.",
         "fixtures:update": "Rewrite the expected JSON files of tests/fixtures/ from the current output (review the diff)."
     },

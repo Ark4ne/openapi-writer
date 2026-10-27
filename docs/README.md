@@ -9,7 +9,7 @@ document avec la liste de ses livrables ; le tableau ci-dessous en est calculé 
 ## Progression
 
 <!-- progress:start -->
-**Avancement global : `█████████░` 90 % (139 / 153 livrables)**
+**Avancement global : `█████████░` 93 % (143 / 153 livrables)**
 
 | Jalon | Statut | Avancement | Livrables |
 | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ document avec la liste de ses livrables ; le tableau ci-dessous en est calculé 
 | [M4 — Adaptateur 3.0](M4-adapter-3.0.md) | Terminé | `██████████` 100 % | 23 / 23 |
 | [M5 — Adaptateur 3.2](M5-adapter-3.2.md) | Terminé | `██████████` 100 % | 16 / 16 |
 | [M6 — Validation](M6-validation.md) | En cours | `█████████░` 94 % | 17 / 18 |
-| [M7 — Version 1.0.0](M7-release-1.0.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 8 |
+| [M7 — Version 1.0.0](M7-release-1.0.md) | En cours | `█████░░░░░` 50 % | 4 / 8 |
 <!-- progress:end -->
 
 ## Mettre à jour la progression
@@ -64,3 +64,6 @@ en fait passer une partie au vert.
 | 2026-10-27 | `Schema::ref()` renvoie un `Schema` portant `$ref` (champs voisins et `nullable()` possibles) ; les autres `::ref()` renvoient un `Reference` |
 | 2026-10-27 | Version déclarée par le champ `OpenApi::openapi()` (et non `OpenApi::create(Version)`, dont l'argument est l'`objectId`) |
 | 2026-10-27 | Ordre des mots-clés de `Schema` : celui de la sortie GoldSpec, ajouts 2020-12 placés dans leur famille (snapshots du générateur) |
+| 2026-10-28 | Validation JSON Schema : `opis/json-schema` retenu (`justinrainbow/json-schema` ne lit pas draft 2020-12), derrière le port `JsonSchemaValidator` et en `suggest` |
+| 2026-10-28 | Immuabilité conservée : 500 opérations se construisent en 15 ms environ, aussi vite avec `addPaths()` chemin par chemin qu'en un appel ; écriture en 3.0.4 en 85 ms, 12 Mo de pic (PHP 8.5, `composer benchmark`) |
+| 2026-10-28 | Exceptions immédiates réservées aux valeurs interdites dans toutes les versions (code de statut, champs exclusifs, doublon de `Schema.type`, `objectId` manquant ou en double, méthode fixe dans `additionalOperations`) ; les incohérences entre objets relèvent du validateur |

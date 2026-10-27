@@ -92,5 +92,10 @@ Seul le socle (`SpecObject::with()`, `MetadataFactory`, `Normalizer`, rewriters,
 
 ## Questions à clore pendant M1
 
-- Portée des exceptions immédiates à la construction (spécification, section 4, règle 10).
-- Mesure du coût de l'immuabilité sur un document de 500 opérations.
+Les deux questions sont closes au M7 (voir les décisions de [README.md](README.md)) :
+
+- Portée des exceptions immédiates à la construction (spécification, section 4, règle 10) : seules les valeurs
+  interdites dans toutes les versions lèvent une exception (liste dans [architecture.md](architecture.md) §2.6),
+  le reste relève du validateur.
+- Mesure du coût de l'immuabilité sur un document de 500 opérations : négligeable, l'approche est conservée
+  (`composer benchmark`).
