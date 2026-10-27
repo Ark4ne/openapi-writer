@@ -1,0 +1,14 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "type": "object"
+            }
+        }
+    }
+}

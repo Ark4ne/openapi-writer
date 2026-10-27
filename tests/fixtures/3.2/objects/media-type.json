@@ -1,0 +1,15 @@
+{
+    "schema": {
+        "$ref": "#/components/schemas/User"
+    },
+    "examples": {
+        "alice": {
+            "value": {
+                "name": "Alice"
+            }
+        },
+        "bob": {
+            "$ref": "#/components/examples/Bob"
+        }
+    }
+}

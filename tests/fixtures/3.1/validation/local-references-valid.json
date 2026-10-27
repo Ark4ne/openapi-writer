@@ -1,0 +1,56 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/users/{id}": {
+            "get": {
+                "operationId": "getUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        },
+                        "links": {
+                            "self": {
+                                "operationRef": "#/paths/~1users~1{id}/get"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "type": "object",
+                "properties": {
+                    "manager": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "team": {
+                        "$ref": "#/components/schemas/User/properties/manager"
+                    }
+                }
+            }
+        }
+    }
+}

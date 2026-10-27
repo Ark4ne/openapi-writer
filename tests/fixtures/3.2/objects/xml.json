@@ -1,0 +1,6 @@
+{
+    "nodeType": "element",
+    "name": "animal",
+    "namespace": "https://example.com/schema/sample",
+    "prefix": "sample"
+}

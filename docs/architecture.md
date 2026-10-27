@@ -227,6 +227,22 @@ interface Rewriter
 - **Strict** : s'il y a au moins un `Unsupported`, une seule `UnsupportedFeatureException` qui les contient tous ;
 - **Permissif** : chaque `Unsupported` devient `Dropped`, et le résultat porte la liste complète.
 
+Règles fixées par la suite de tests (M2) :
+
+- `Converted` signale toute sortie qui diffère de la forme du modèle (celle de la dernière ligne) : surtout en
+  3.0, mais aussi la `description` vide d'une réponse en 3.1, et `nullable` sur une `$ref` dans toutes les
+  versions. Le mode (strict ou permissif) n'a pas d'effet sur une conversion.
+- Le pointeur d'un diagnostic est celui du nœud réécrit ; celui d'un champ `Unsupported` est celui du champ.
+- Un cas d'enum indisponible (`mutualTLS`, `querystring`, style `cookie`) retire l'objet qui le porte, au
+  pointeur de cet objet.
+- Scopes d'un schéma non OAuth en 3.0 (permissif) : la liste devient `[]`, pointeur `/security/0/ApiKey`.
+- Les extensions réservées `x-oai-` / `x-oas-` sont écrites en 3.0, retirées ou rejetées à partir de 3.1.
+- `Validator::validate()` ne lève pas `UnsupportedFeatureException` : chaque fonctionnalité non exprimable devient
+  une violation dont la règle est `Serializer::class` ; les erreurs du schéma officiel ont pour règle
+  `OpisJsonSchemaValidator::class`.
+- YAML : `Yaml::DUMP_OBJECT_AS_MAP | DUMP_EMPTY_ARRAY_AS_SEQUENCE | DUMP_MULTI_LINE_LITERAL_BLOCK`, profondeur
+  inline 10, indentation 2 ; les codes de statut sont entre guillemets.
+
 ## 4. La validation
 
 | Pattern | Classe | Rôle |
@@ -256,6 +272,14 @@ interface Rule
 - Le message commence par la cible : `Info::license: url and identifier are mutually exclusive`.
 - Exception immédiate seulement pour une valeur interdite **dans toutes les versions**. Ce qui dépend de la version
   relève de la sérialisation ; ce qui dépend du document entier relève du validateur.
+- Valeurs interdites retenues (`InvalidArgumentException`) : `url` + `identifier` d'une licence, `example` +
+  `examples` (Parameter, Header, MediaType), `value` + `externalValue` (Example), `operationRef` + `operationId`
+  (Link), code de statut mal formé, compteur `min*` / `max*` négatif, `multipleOf` ≤ 0, type inconnu ou en double,
+  `x('')` et `x('x-')`, `Reference::for()` sur un objet hors composants.
+- Messages de référence : `Parameter::in: "body" is not one of query, header, path, cookie, querystring`,
+  `Components::schemas: an entry with the objectId "User" already exists`, `Components::schemas: an entry has no
+  objectId`, `Reference::for: the Schema has no objectId`, `symfony/yaml is required to write YAML: composer
+  require symfony/yaml`, et `"2 features cannot be written for this version:\n- /webhooks: …"`.
 
 ## 6. Conventions de code
 
@@ -282,6 +306,15 @@ interface Rule
 - Assertions partagées dans une classe de base `TestCase` (`assertSerializesTo`, `assertValidOpenApi`), pas dans
   des traits.
 - Structure Arrange / Act / Assert, nom du test en phrase.
+- **Fixtures** : `tests/fixtures/<ligne>/` (`3.0`, `3.1`, `3.2`), écrites pour le dernier patch de la ligne ; pour
+  un autre patch, le helper remplace le champ `openapi`. Format `JSON_PRETTY_PRINT` de PHP plus un saut de ligne,
+  comparé octet par octet. Un fragment est enveloppé dans un document minimal (`Envelope`) avant d'être validé.
+- La fixture attendue est validée contre le schéma officiel **avant** la comparaison (`OfficialSchema`, outil de
+  test indépendant du code testé, configuré comme `OpisJsonSchemaValidator`).
+- `composer fixtures:update` réécrit les fixtures depuis la sortie réelle, seulement quand elle est du JSON valide :
+  chaque modification se relit dans le diff.
+- Les doublures de test (rewriters, règles) sont des classes nommées de `tests/Support/` : les règles `phpat` de
+  nommage s'appliquent aussi aux classes anonymes.
 
 ## 8. Recettes
 

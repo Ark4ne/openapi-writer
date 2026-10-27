@@ -1,0 +1,9 @@
+{
+    "openapi": "3.2.0",
+    "$self": "https://api.example.com/openapi.json",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {}
+}

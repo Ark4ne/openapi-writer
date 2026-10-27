@@ -1,0 +1,6 @@
+{
+    "description": "A stream of events, one JSON document per line",
+    "itemSchema": {
+        "$ref": "#/components/schemas/Event"
+    }
+}

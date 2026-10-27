@@ -1,0 +1,21 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Owner": {
+                "description": "The owner of the pet",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/User"
+                    }
+                ],
+                "readOnly": true
+            }
+        }
+    }
+}

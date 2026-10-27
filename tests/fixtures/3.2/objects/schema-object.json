@@ -1,0 +1,48 @@
+{
+    "title": "User",
+    "description": "A user of the platform",
+    "default": {
+        "name": "Anonymous"
+    },
+    "type": "object",
+    "required": [
+        "id",
+        "name"
+    ],
+    "properties": {
+        "id": {
+            "format": "int64",
+            "type": "integer",
+            "readOnly": true
+        },
+        "name": {
+            "type": "string",
+            "writeOnly": false
+        },
+        "settings": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    "additionalProperties": false,
+    "maxProperties": 10,
+    "minProperties": 1,
+    "xml": {
+        "name": "user"
+    },
+    "externalDocs": {
+        "url": "https://example.com/docs/user"
+    },
+    "example": {
+        "id": 1,
+        "name": "Alice"
+    },
+    "deprecated": false,
+    "x-model": "App\\Models\\User"
+}

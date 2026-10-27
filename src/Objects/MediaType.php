@@ -18,6 +18,7 @@ use Ark4ne\OpenApiWriter\Support\Undefined;
  *
  * @see https://spec.openapis.org/oas/v3.2.0.html#media-type-object
  *
+ * @property-read string|null $description
  * @property-read SchemaContract|null $schema
  * @property-read SchemaContract|null $itemSchema
  * @property-read mixed $example
@@ -28,6 +29,7 @@ use Ark4ne\OpenApiWriter\Support\Undefined;
  */
 final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
 {
+    #[Field(since: Version::V3_2_0)] protected string|Undefined $description = Undefined::Value;
     #[Field] protected SchemaContract|Undefined $schema = Undefined::Value;
     #[Field(since: Version::V3_2_0)] protected SchemaContract|Undefined $itemSchema = Undefined::Value;
     #[Field] protected mixed $example = Undefined::Value;
@@ -76,6 +78,11 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
     public static function ref(string $ref, ?string $objectId = null): Reference
     {
         return Reference::create($objectId);
+    }
+
+    public function description(?string $description): static
+    {
+        return $this->with('description', $description);
     }
 
     public function schema(?SchemaContract $schema): static

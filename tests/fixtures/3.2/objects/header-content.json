@@ -1,0 +1,10 @@
+{
+    "description": "Trace of the request",
+    "content": {
+        "text/plain": {
+            "schema": {
+                "type": "string"
+            }
+        }
+    }
+}

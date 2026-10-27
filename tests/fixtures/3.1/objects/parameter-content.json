@@ -1,0 +1,16 @@
+{
+    "name": "coordinates",
+    "in": "path",
+    "required": true,
+    "content": {
+        "application/json": {
+            "schema": {
+                "type": "object",
+                "required": [
+                    "lat",
+                    "long"
+                ]
+            }
+        }
+    }
+}

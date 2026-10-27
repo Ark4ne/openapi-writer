@@ -1,0 +1,10 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/users": {}
+    }
+}

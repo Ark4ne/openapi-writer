@@ -1,0 +1,6 @@
+{
+    "name": "API Support",
+    "url": "https://example.com/support",
+    "email": "support@example.com",
+    "x-team": "platform"
+}

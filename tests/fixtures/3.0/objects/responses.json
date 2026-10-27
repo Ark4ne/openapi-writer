@@ -1,0 +1,19 @@
+{
+    "default": {
+        "description": "Unexpected error"
+    },
+    "200": {
+        "description": "OK",
+        "content": {
+            "application/json": {
+                "schema": {
+                    "$ref": "#/components/schemas/User"
+                }
+            }
+        }
+    },
+    "404": {
+        "$ref": "#/components/responses/NotFound"
+    },
+    "x-generated": true
+}

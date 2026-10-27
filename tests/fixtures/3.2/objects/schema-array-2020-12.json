@@ -1,0 +1,17 @@
+{
+    "type": "array",
+    "prefixItems": [
+        {
+            "type": "string"
+        },
+        {
+            "type": "integer"
+        }
+    ],
+    "contains": {
+        "type": "integer"
+    },
+    "minContains": 1,
+    "maxContains": 3,
+    "unevaluatedItems": false
+}

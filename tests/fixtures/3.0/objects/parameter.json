@@ -1,0 +1,23 @@
+{
+    "name": "page",
+    "in": "query",
+    "description": "The page to return",
+    "required": false,
+    "deprecated": false,
+    "allowEmptyValue": false,
+    "style": "form",
+    "explode": true,
+    "allowReserved": false,
+    "schema": {
+        "type": "integer",
+        "minimum": 1
+    },
+    "examples": {
+        "first": {
+            "value": 1
+        },
+        "last": {
+            "value": 100
+        }
+    }
+}

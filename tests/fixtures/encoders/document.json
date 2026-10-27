@@ -1,0 +1,7 @@
+{
+    "url": "https://example.com/users/{id}",
+    "title": "Élève — 学生",
+    "float": 1.0,
+    "emptyMap": {},
+    "emptyList": []
+}

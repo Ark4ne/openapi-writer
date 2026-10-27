@@ -1,0 +1,17 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "responses": {
+            "NotFound": {
+                "$ref": "#/components/responses/Missing",
+                "summary": "Not found",
+                "description": "The resource does not exist"
+            }
+        }
+    }
+}

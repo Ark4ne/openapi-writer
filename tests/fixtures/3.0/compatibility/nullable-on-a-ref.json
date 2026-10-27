@@ -1,0 +1,26 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Owner": {
+                "anyOf": [
+                    {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    {
+                        "type": "object",
+                        "nullable": true,
+                        "enum": [
+                            null
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "contentType": "image/png, image/jpeg",
+    "headers": {
+        "X-Rate-Limit": {
+            "schema": {
+                "type": "integer"
+            }
+        }
+    },
+    "style": "form",
+    "explode": true,
+    "allowReserved": false
+}

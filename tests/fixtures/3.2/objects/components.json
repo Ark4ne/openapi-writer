@@ -1,0 +1,98 @@
+{
+    "schemas": {
+        "User": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "Empty": {
+            "type": "object"
+        }
+    },
+    "responses": {
+        "NotFound": {
+            "description": "Not found"
+        }
+    },
+    "parameters": {
+        "Page": {
+            "name": "page",
+            "in": "query",
+            "schema": {
+                "type": "integer"
+            }
+        }
+    },
+    "examples": {
+        "Alice": {
+            "value": {
+                "name": "Alice"
+            }
+        }
+    },
+    "requestBodies": {
+        "UserBody": {
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "$ref": "#/components/schemas/User"
+                    }
+                }
+            }
+        }
+    },
+    "headers": {
+        "RateLimit": {
+            "schema": {
+                "type": "integer"
+            }
+        }
+    },
+    "securitySchemes": {
+        "ApiKey": {
+            "type": "apiKey",
+            "name": "X-API-Key",
+            "in": "header"
+        }
+    },
+    "links": {
+        "UserRepositories": {
+            "operationId": "getRepositoriesByOwner"
+        }
+    },
+    "callbacks": {
+        "onEvent": {
+            "{$request.body#/url}": {
+                "post": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "pathItems": {
+        "Ping": {
+            "get": {
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        }
+    },
+    "mediaTypes": {
+        "UserJson": {
+            "schema": {
+                "$ref": "#/components/schemas/User"
+            }
+        }
+    },
+    "x-generated": true
+}

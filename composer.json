@@ -17,13 +17,16 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.75",
+        "opis/json-schema": "^2.4",
         "phpat/phpat": "^0.12.5",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/phpunit": "^11.5 || ^12.0 || ^13.0"
+        "phpunit/phpunit": "^11.5 || ^12.0 || ^13.0",
+        "symfony/yaml": "^6.4 || ^7.0 || ^8.0"
     },
     "suggest": {
+        "opis/json-schema": "Required to validate documents against the official OpenAPI schemas (OpisJsonSchemaValidator).",
         "symfony/yaml": "Required to write documents as YAML (toYaml())."
     },
     "autoload": {
@@ -54,7 +57,11 @@
             "@stan",
             "@test"
         ],
-        "progress": "php bin/progress.php"
+        "progress": "php bin/progress.php",
+        "fixtures:update": [
+            "@putenv OPENAPI_WRITER_UPDATE_FIXTURES=1",
+            "phpunit"
+        ]
     },
     "scripts-descriptions": {
         "test": "Run the whole PHPUnit test suite.",
@@ -64,7 +71,8 @@
         "cs:fix": "Fix the code style (PER-CS).",
         "mutation": "Run mutation testing (requires infection to be installed globally).",
         "ci": "Run every blocking check of the CI locally.",
-        "progress": "Rebuild the progress table of docs/README.md from the milestone checklists."
+        "progress": "Rebuild the progress table of docs/README.md from the milestone checklists.",
+        "fixtures:update": "Rewrite the expected JSON files of tests/fixtures/ from the current output (review the diff)."
     },
     "config": {
         "sort-packages": true

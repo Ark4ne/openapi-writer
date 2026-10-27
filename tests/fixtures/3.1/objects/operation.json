@@ -1,0 +1,61 @@
+{
+    "tags": [
+        "users",
+        "admin"
+    ],
+    "summary": "Create a user",
+    "description": "Creates one user.",
+    "externalDocs": {
+        "url": "https://example.com/docs/users"
+    },
+    "operationId": "createUser",
+    "parameters": [
+        {
+            "name": "X-Request-Id",
+            "in": "header",
+            "schema": {
+                "format": "uuid",
+                "type": "string"
+            }
+        },
+        {
+            "$ref": "#/components/parameters/Page"
+        }
+    ],
+    "requestBody": {
+        "$ref": "#/components/requestBodies/UserBody"
+    },
+    "responses": {
+        "201": {
+            "description": "Created"
+        },
+        "422": {
+            "description": "Unprocessable Entity"
+        }
+    },
+    "callbacks": {
+        "onCreated": {
+            "{$request.body#/callbackUrl}": {
+                "post": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "deprecated": true,
+    "security": [
+        {
+            "api_key": []
+        },
+        {}
+    ],
+    "servers": [
+        {
+            "url": "https://eu.example.com"
+        }
+    ]
+}

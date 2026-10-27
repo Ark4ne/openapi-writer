@@ -1,0 +1,11 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0",
+        "x-oai-status": "beta",
+        "x-internal": true
+    },
+    "paths": {},
+    "x-oas-generator": "ark4ne/openapi-writer"
+}

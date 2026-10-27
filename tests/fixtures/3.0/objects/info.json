@@ -1,0 +1,14 @@
+{
+    "title": "Users API",
+    "description": "Manage the users of the platform.",
+    "termsOfService": "https://example.com/terms",
+    "contact": {
+        "name": "API Support"
+    },
+    "license": {
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0.0",
+    "x-audience": "public"
+}

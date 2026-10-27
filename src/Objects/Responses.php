@@ -16,12 +16,12 @@ use Ark4ne\OpenApiWriter\Support\Undefined;
  * @see https://spec.openapis.org/oas/v3.2.0.html#responses-object
  *
  * @property-read ResponseContract|null $default
- * @property-read array<string, ResponseContract>|null $responses
+ * @property-read array<int|string, ResponseContract>|null $responses
  */
 final class Responses extends ExtensibleSpecObject
 {
     #[Field] protected ResponseContract|Undefined $default = Undefined::Value;
-    /** @var array<string, ResponseContract>|Undefined */
+    /** @var array<int|string, ResponseContract>|Undefined */
     #[Field(map: true, patterned: true)] protected array|Undefined $responses = Undefined::Value;
 
     /**

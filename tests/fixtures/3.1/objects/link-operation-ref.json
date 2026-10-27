@@ -1,0 +1,7 @@
+{
+    "operationRef": "#/paths/~12.0~1repositories~1{username}~1{slug}/get",
+    "parameters": {
+        "username": "$response.body#/owner/username",
+        "slug": "$response.body#/slug"
+    }
+}

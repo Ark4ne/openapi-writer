@@ -1,0 +1,19 @@
+{
+    "url": "https://{region}.example.com/{version}",
+    "description": "Regional server",
+    "name": "regional",
+    "variables": {
+        "region": {
+            "enum": [
+                "eu",
+                "us"
+            ],
+            "default": "eu",
+            "description": "Region of the server"
+        },
+        "version": {
+            "default": "v1"
+        }
+    },
+    "x-internal": false
+}

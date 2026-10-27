@@ -1,0 +1,22 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "securitySchemes": {
+            "OAuth2": {
+                "type": "oauth2",
+                "flows": {
+                    "clientCredentials": {
+                        "tokenUrl": "https://example.com/oauth/token",
+                        "scopes": {}
+                    }
+                },
+                "oauth2MetadataUrl": "https://example.com/.well-known/oauth-authorization-server"
+            }
+        }
+    }
+}

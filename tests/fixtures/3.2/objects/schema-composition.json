@@ -1,0 +1,35 @@
+{
+    "allOf": [
+        {
+            "$ref": "#/components/schemas/Pet"
+        },
+        {
+            "type": "object",
+            "required": [
+                "name"
+            ]
+        }
+    ],
+    "anyOf": [
+        {
+            "type": "string"
+        },
+        {
+            "type": "integer"
+        }
+    ],
+    "oneOf": [
+        {
+            "$ref": "#/components/schemas/Cat"
+        },
+        {
+            "$ref": "#/components/schemas/Dog"
+        }
+    ],
+    "not": {
+        "type": "null"
+    },
+    "discriminator": {
+        "propertyName": "petType"
+    }
+}

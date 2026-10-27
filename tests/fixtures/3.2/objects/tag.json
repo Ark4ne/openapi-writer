@@ -1,0 +1,10 @@
+{
+    "name": "pets",
+    "summary": "Pets",
+    "description": "Everything about your pets",
+    "externalDocs": {
+        "url": "https://example.com/docs/pets"
+    },
+    "parent": "animals",
+    "kind": "nav"
+}

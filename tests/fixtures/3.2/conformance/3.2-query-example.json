@@ -1,0 +1,119 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Flight API",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/flights/search": {
+            "query": {
+                "summary": "Search flights with complex criteria",
+                "description": "Uses the HTTP QUERY method to perform a safe, idempotent flight search with filters that are too complex for a URL query string.",
+                "operationId": "searchFlights",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "origin",
+                                    "destination",
+                                    "departureDate"
+                                ],
+                                "properties": {
+                                    "origin": {
+                                        "type": "string",
+                                        "example": "ATL"
+                                    },
+                                    "destination": {
+                                        "type": "string",
+                                        "example": "LHR"
+                                    },
+                                    "departureDate": {
+                                        "format": "date",
+                                        "type": "string",
+                                        "example": "2026-06-15"
+                                    },
+                                    "returnDate": {
+                                        "format": "date",
+                                        "type": "string",
+                                        "example": "2026-06-25"
+                                    },
+                                    "passengers": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "example": 2
+                                    },
+                                    "cabinClass": {
+                                        "enum": [
+                                            "economy",
+                                            "premium-economy",
+                                            "business",
+                                            "first"
+                                        ],
+                                        "type": "string",
+                                        "example": "business"
+                                    },
+                                    "nonStopOnly": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Matching flights",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "flights": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "flightNumber": {
+                                                        "type": "string",
+                                                        "example": "DL30"
+                                                    },
+                                                    "origin": {
+                                                        "type": "string",
+                                                        "example": "ATL"
+                                                    },
+                                                    "destination": {
+                                                        "type": "string",
+                                                        "example": "LHR"
+                                                    },
+                                                    "departureTime": {
+                                                        "format": "date-time",
+                                                        "type": "string",
+                                                        "example": "2026-06-15T22:30:00Z"
+                                                    },
+                                                    "arrivalTime": {
+                                                        "format": "date-time",
+                                                        "type": "string",
+                                                        "example": "2026-06-16T10:15:00Z"
+                                                    },
+                                                    "price": {
+                                                        "format": "float",
+                                                        "type": "number",
+                                                        "example": 1249.99
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,23 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Keyword": {
+                "type": "object",
+                "dependentSchemas": {
+                    "creditCard": {
+                        "type": "object",
+                        "required": [
+                            "billingAddress"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

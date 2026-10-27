@@ -1,0 +1,11 @@
+{
+    "operationId": "getRepositoriesByOwner",
+    "parameters": {
+        "username": "$response.body#/username"
+    },
+    "requestBody": "$request.body#/user",
+    "description": "The repositories of the user",
+    "server": {
+        "url": "https://eu.example.com"
+    }
+}

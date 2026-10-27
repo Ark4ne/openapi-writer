@@ -1,0 +1,8 @@
+{
+    "enum": [
+        "8443",
+        "443"
+    ],
+    "default": "8443",
+    "description": "The port of the server"
+}

@@ -16,6 +16,7 @@ cible est 3.0 ou 3.1.
 - [ ] `Tag.summary`, `Tag.parent`, `Tag.kind` (`parent` retiré avant 3.2, pas de conversion en `x-tagGroups`)
 - [ ] Flux séquentiels : `MediaType.itemSchema`, `prefixEncoding`, `itemEncoding` ; `Encoding.encoding`,
       `prefixEncoding`, `itemEncoding`
+- [ ] `MediaType.description`
 - [ ] `Example.dataValue` et `Example.serializedValue`
 - [ ] `Discriminator.defaultMapping`
 - [ ] `Xml.nodeType`

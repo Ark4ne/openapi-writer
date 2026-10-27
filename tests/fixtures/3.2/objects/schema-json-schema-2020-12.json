@@ -1,0 +1,73 @@
+{
+    "$schema": "https://spec.openapis.org/oas/3.1/dialect/base",
+    "$id": "https://example.com/schemas/address",
+    "$anchor": "address",
+    "$dynamicAnchor": "node",
+    "$defs": {
+        "Name": {
+            "type": "string",
+            "minLength": 1
+        }
+    },
+    "$comment": "Kept in sync with the database",
+    "type": [
+        "object",
+        "null"
+    ],
+    "contentEncoding": "base64",
+    "contentMediaType": "application/json",
+    "contentSchema": {
+        "type": "object"
+    },
+    "patternProperties": {
+        "^x-": {
+            "type": "string"
+        }
+    },
+    "propertyNames": {
+        "type": "string",
+        "maxLength": 32
+    },
+    "unevaluatedProperties": false,
+    "dependentRequired": {
+        "creditCard": [
+            "billingAddress"
+        ]
+    },
+    "dependentSchemas": {
+        "creditCard": {
+            "type": "object",
+            "required": [
+                "billingAddress"
+            ]
+        }
+    },
+    "if": {
+        "type": "object",
+        "properties": {
+            "country": {
+                "const": "US"
+            }
+        }
+    },
+    "then": {
+        "type": "object",
+        "required": [
+            "zipCode"
+        ]
+    },
+    "else": {
+        "type": "object",
+        "required": [
+            "postalCode"
+        ]
+    },
+    "examples": [
+        {
+            "country": "US"
+        },
+        {
+            "country": "FR"
+        }
+    ]
+}

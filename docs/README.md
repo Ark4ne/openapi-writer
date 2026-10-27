@@ -9,17 +9,17 @@ document avec la liste de ses livrables ; le tableau ci-dessous en est calculé 
 ## Progression
 
 <!-- progress:start -->
-**Avancement global : `██░░░░░░░░` 29 % (44 / 150 livrables)**
+**Avancement global : `███░░░░░░░` 39 % (60 / 153 livrables)**
 
 | Jalon | Statut | Avancement | Livrables |
 | --- | --- | --- | --- |
 | [M0 — Dépôt et outillage](M0-bootstrap.md) | En cours | `███████░░░` 75 % | 12 / 16 |
 | [M1 — Contrat d'API](M1-api-contract.md) | En cours | `█████████░` 96 % | 32 / 33 |
-| [M2 — Suite de tests complète](M2-tests.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 17 |
+| [M2 — Suite de tests complète](M2-tests.md) | En cours | `█████████░` 94 % | 16 / 17 |
 | [M3 — Objets et sérialisation 3.1](M3-objects-serialization-3.1.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 22 |
 | [M4 — Adaptateur 3.0](M4-adapter-3.0.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 23 |
-| [M5 — Adaptateur 3.2](M5-adapter-3.2.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 15 |
-| [M6 — Validation](M6-validation.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 16 |
+| [M5 — Adaptateur 3.2](M5-adapter-3.2.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 16 |
+| [M6 — Validation](M6-validation.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 18 |
 | [M7 — Version 1.0.0](M7-release-1.0.md) | À faire | `░░░░░░░░░░` 0 % | 0 / 8 |
 <!-- progress:end -->
 

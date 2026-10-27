@@ -1,0 +1,9 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Compatibility",
+        "summary": "Compatibility matrix",
+        "version": "1.0.0"
+    },
+    "paths": {}
+}

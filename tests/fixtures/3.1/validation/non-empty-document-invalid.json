@@ -1,0 +1,35 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/users": {
+            "summary": "Users"
+        }
+    },
+    "webhooks": {
+        "userCreated": {
+            "summary": "A user was created"
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "type": "object"
+            }
+        },
+        "pathItems": {
+            "Ping": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

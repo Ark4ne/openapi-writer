@@ -1,0 +1,19 @@
+{
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "avatar": {
+                "format": "binary",
+                "type": "string"
+            }
+        }
+    },
+    "encoding": {
+        "avatar": {
+            "contentType": "image/png"
+        }
+    }
+}

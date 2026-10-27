@@ -1,0 +1,14 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.example.com",
+            "name": "production"
+        }
+    ],
+    "paths": {}
+}

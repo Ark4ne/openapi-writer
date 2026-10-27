@@ -1,0 +1,20 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "responses": {
+            "User": {
+                "description": "A user",
+                "content": {
+                    "application/json": {
+                        "$ref": "#/components/mediaTypes/UserJson"
+                    }
+                }
+            }
+        }
+    }
+}

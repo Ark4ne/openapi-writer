@@ -1,0 +1,16 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "examples": {
+            "Date": {
+                "summary": "A date",
+                "dataValue": "2025-06-01"
+            }
+        }
+    }
+}

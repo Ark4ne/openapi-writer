@@ -1,0 +1,23 @@
+{
+    "summary": "A user",
+    "description": "The requested user",
+    "headers": {
+        "X-Rate-Limit": {
+            "schema": {
+                "type": "integer"
+            }
+        }
+    },
+    "content": {
+        "application/json": {
+            "schema": {
+                "$ref": "#/components/schemas/User"
+            }
+        }
+    },
+    "links": {
+        "repositories": {
+            "operationId": "getRepositoriesByOwner"
+        }
+    }
+}

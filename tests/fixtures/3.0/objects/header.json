@@ -1,0 +1,12 @@
+{
+    "description": "Remaining requests",
+    "required": true,
+    "deprecated": false,
+    "style": "simple",
+    "explode": false,
+    "schema": {
+        "format": "int32",
+        "type": "integer"
+    },
+    "example": 99
+}

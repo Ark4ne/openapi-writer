@@ -1,0 +1,26 @@
+{
+    "implicit": {
+        "authorizationUrl": "https://example.com/oauth/authorize",
+        "scopes": {}
+    },
+    "password": {
+        "tokenUrl": "https://example.com/oauth/token",
+        "scopes": {}
+    },
+    "clientCredentials": {
+        "tokenUrl": "https://example.com/oauth/token",
+        "scopes": {}
+    },
+    "authorizationCode": {
+        "authorizationUrl": "https://example.com/oauth/authorize",
+        "tokenUrl": "https://example.com/oauth/token",
+        "scopes": {
+            "read:pets": "read your pets"
+        }
+    },
+    "deviceAuthorization": {
+        "deviceAuthorizationUrl": "https://example.com/oauth/device",
+        "tokenUrl": "https://example.com/oauth/token",
+        "scopes": {}
+    }
+}

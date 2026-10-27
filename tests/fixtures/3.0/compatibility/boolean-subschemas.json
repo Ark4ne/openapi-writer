@@ -1,0 +1,28 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Flexible": {
+                "type": "object",
+                "properties": {
+                    "anything": {
+                        "type": "array",
+                        "items": {}
+                    },
+                    "nothing": {
+                        "type": "array",
+                        "items": {
+                            "not": {}
+                        }
+                    }
+                },
+                "additionalProperties": false
+            }
+        }
+    }
+}

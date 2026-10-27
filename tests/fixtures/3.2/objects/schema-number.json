@@ -1,0 +1,7 @@
+{
+    "default": 1.0,
+    "type": "number",
+    "maximum": 100.0,
+    "minimum": 0,
+    "multipleOf": 0.5
+}

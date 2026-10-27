@@ -11,6 +11,9 @@ message), sans jamais lever d'exception sur un document invalide.
 - [ ] Validation contre le schéma officiel 3.0 (draft 4)
 - [ ] Validation contre les schémas officiels 3.1 et 3.2 (draft 2020-12)
 - [ ] Librairie JSON Schema en dépendance suggérée ; exception explicite si elle est absente
+- [ ] `schema-base` 3.1 et 3.2 appliqué quand `jsonSchemaDialect` est le dialecte OpenAPI
+- [ ] Mêmes verdicts que `tests/Support/OfficialSchema.php` sur toutes les fixtures (les adaptations opis existent
+      en double)
 
 ## Niveau 2 — règles sémantiques (une classe par règle)
 
@@ -21,7 +24,8 @@ message), sans jamais lever d'exception sur un document invalide.
 - [ ] Toute exigence de sécurité nomme un `securityScheme` déclaré ; les scopes OAuth2 existent dans le flux
 - [ ] Tags utilisés déclarés (avertissement) ; en 3.2, `Tag.parent` existe et sans cycle
 - [ ] Chemins équivalents à un nom de variable près signalés
-- [ ] En 3.1 et plus, au moins `paths`, `components` ou `webhooks`
+- [ ] Au moins une opération dans `paths` ou `webhooks` (avertissement) ; l'exigence « `paths`, `components` ou
+      `webhooks` » de 3.1 est déjà vérifiée par le schéma officiel
 - [ ] `default` et `example` conformes au type du schéma (avertissement)
 - [ ] Règles activables et désactivables, ajout de règles personnalisées
 

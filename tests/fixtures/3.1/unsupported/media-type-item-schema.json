@@ -1,0 +1,17 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "requestBodies": {
+            "Body": {
+                "content": {
+                    "application/jsonl": {}
+                }
+            }
+        }
+    }
+}

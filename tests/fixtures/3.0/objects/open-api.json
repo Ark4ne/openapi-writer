@@ -1,0 +1,50 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Users API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.example.com"
+        }
+    ],
+    "paths": {
+        "/users": {
+            "get": {
+                "tags": [
+                    "users"
+                ],
+                "operationId": "listUsers",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "ApiKey": {
+                "type": "apiKey",
+                "name": "X-API-Key",
+                "in": "header"
+            }
+        }
+    },
+    "security": [
+        {
+            "ApiKey": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "users"
+        }
+    ],
+    "externalDocs": {
+        "url": "https://example.com/docs"
+    },
+    "x-generator": "ark4ne/openapi-writer"
+}

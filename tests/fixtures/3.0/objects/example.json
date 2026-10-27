@@ -1,0 +1,11 @@
+{
+    "summary": "A user",
+    "description": "A user with every field set",
+    "value": {
+        "id": 1,
+        "name": "Alice",
+        "score": 1.0,
+        "tags": []
+    },
+    "x-generated": false
+}

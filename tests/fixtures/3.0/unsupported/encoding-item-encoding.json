@@ -1,0 +1,23 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "requestBodies": {
+            "Body": {
+                "content": {
+                    "multipart/form-data": {
+                        "encoding": {
+                            "parts": {
+                                "contentType": "multipart/mixed"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Count": {
+                "default": 10,
+                "type": "integer",
+                "example": 3
+            },
+            "Nickname": {
+                "default": null,
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "Ratio": {
+                "type": "number",
+                "example": 1
+            },
+            "Tags": {
+                "default": [],
+                "type": "array",
+                "example": [
+                    "a"
+                ]
+            },
+            "Any": {
+                "default": {
+                    "a": 1
+                },
+                "example": "free"
+            }
+        }
+    }
+}

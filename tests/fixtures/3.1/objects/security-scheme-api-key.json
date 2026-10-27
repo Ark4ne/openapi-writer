@@ -1,0 +1,6 @@
+{
+    "type": "apiKey",
+    "description": "API key sent in a header",
+    "name": "X-API-Key",
+    "in": "header"
+}

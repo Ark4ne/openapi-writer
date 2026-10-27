@@ -1,0 +1,13 @@
+{
+    "title": "Role",
+    "enum": [
+        "admin",
+        "member"
+    ],
+    "default": "member",
+    "format": "slug",
+    "type": "string",
+    "pattern": "^[a-z]+$",
+    "maxLength": 255,
+    "minLength": 1
+}

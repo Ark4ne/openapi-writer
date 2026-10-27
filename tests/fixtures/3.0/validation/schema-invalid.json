@@ -1,0 +1,15 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Validation"
+    },
+    "paths": {
+        "/users": {
+            "get": {
+                "responses": {
+                    "200": {}
+                }
+            }
+        }
+    }
+}

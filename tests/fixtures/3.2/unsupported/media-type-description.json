@@ -1,0 +1,22 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "requestBodies": {
+            "Body": {
+                "content": {
+                    "application/json": {
+                        "description": "A user",
+                        "schema": {
+                            "$ref": "#/components/schemas/User"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

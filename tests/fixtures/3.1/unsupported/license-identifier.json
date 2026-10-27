@@ -1,0 +1,12 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Compatibility",
+        "license": {
+            "name": "MIT",
+            "identifier": "MIT"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {}
+}

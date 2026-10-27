@@ -1,0 +1,7 @@
+{
+    "name": "pets",
+    "description": "Everything about your pets",
+    "externalDocs": {
+        "url": "https://example.com/docs/pets"
+    }
+}

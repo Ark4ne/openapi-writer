@@ -1,0 +1,53 @@
+{
+    "summary": "A user",
+    "description": "Operations on one user",
+    "get": {
+        "operationId": "getUser",
+        "responses": {
+            "200": {
+                "description": "OK"
+            }
+        }
+    },
+    "delete": {
+        "operationId": "deleteUser",
+        "responses": {
+            "204": {
+                "description": "No Content"
+            }
+        }
+    },
+    "query": {
+        "operationId": "searchUser",
+        "responses": {
+            "200": {
+                "description": "OK"
+            }
+        }
+    },
+    "additionalOperations": {
+        "COPY": {
+            "operationId": "copyUser",
+            "responses": {
+                "201": {
+                    "description": "Created"
+                }
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "https://eu.example.com"
+        }
+    ],
+    "parameters": [
+        {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+                "type": "integer"
+            }
+        }
+    ]
+}
