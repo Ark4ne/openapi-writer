@@ -42,4 +42,8 @@ cible est 3.0 ou 3.1.
   - `PathItem.additionalOperations` refuse une méthode fixe, quelle que soit sa casse.
 - `Xml.nodeType` n'est pas converti en `attribute` / `wrapped` avant 3.2 : la correspondance n'existe que pour
   certains cas (`attribute`, tableaux), la ligne `xml-node-type` reste un rejet.
+- Revue de code appliquée : `Xml.nodeType` devient l'enum `XmlNodeType` ; un tableau vide dans un champ à valeur
+  libre compte comme défini pour les champs exclusifs (le trou existait aussi pour `example` / `examples`) ;
+  `exclusiveOf()` devient variadique, ce qui retire la copie de la règle des encodages ; la détection d'une méthode
+  fixe de `PathItem` tient dans un seul helper ; docblocks de classe complétés.
 - Restent rouges : la suite Validation (M6).

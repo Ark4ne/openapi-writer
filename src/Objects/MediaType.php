@@ -14,7 +14,8 @@ use Ark4ne\OpenApiWriter\Metadata\Field;
 use Ark4ne\OpenApiWriter\Support\Undefined;
 
 /**
- * Schema and examples of one media type; its objectId is the media type. `example` and `examples` are mutually exclusive.
+ * Schema and examples of one media type; its objectId is the media type. `example` and `examples` are mutually exclusive,
+ * and so are `encoding` (the parts of a form) and `prefixEncoding` / `itemEncoding` (the items of a sequence).
  *
  * @see https://spec.openapis.org/oas/v3.2.0.html#media-type-object
  *
@@ -143,7 +144,9 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
      */
     public function encoding(Encoding ...$encoding): static
     {
-        $this->exclusiveOfPositionalEncodings($encoding);
+        if ($encoding !== []) {
+            $this->exclusiveOf('encoding', 'prefixEncoding', 'itemEncoding');
+        }
 
         return $this->with('encoding', $encoding);
     }
@@ -156,7 +159,9 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
      */
     public function addEncoding(Encoding ...$encoding): static
     {
-        $this->exclusiveOfPositionalEncodings($encoding);
+        if ($encoding !== []) {
+            $this->exclusiveOf('encoding', 'prefixEncoding', 'itemEncoding');
+        }
 
         return $this->withAdded('encoding', $encoding);
     }
@@ -186,19 +191,5 @@ final class MediaType extends ExtensibleSpecObject implements MediaTypeContract
         }
 
         return $this->with('itemEncoding', $itemEncoding);
-    }
-
-    /**
-     * `encoding` names the parts of a form, `prefixEncoding` and `itemEncoding` the items of a sequence: both kinds
-     * cannot be set together.
-     *
-     * @param array<Encoding> $encoding
-     */
-    private function exclusiveOfPositionalEncodings(array $encoding): void
-    {
-        if ($encoding !== []) {
-            $this->exclusiveOf('encoding', 'prefixEncoding');
-            $this->exclusiveOf('encoding', 'itemEncoding');
-        }
     }
 }

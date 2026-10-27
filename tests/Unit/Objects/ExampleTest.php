@@ -61,4 +61,11 @@ final class ExampleTest extends ExtensibleSpecObjectTestCase
         self::assertSame('1', $example->serializedValue);
         self::assertSame('https://example.com/one.txt', Example::create()->dataValue(1)->externalValue('https://example.com/one.txt')->externalValue);
     }
+
+    public function test_an_empty_array_is_a_value_for_the_exclusive_fields(): void
+    {
+        self::assertThrows(InvalidArgumentException::class, static fn(): Example => Example::create()->value([])->dataValue(1));
+        self::assertThrows(InvalidArgumentException::class, static fn(): Example => Example::create()->dataValue([])->value(1));
+        self::assertThrows(InvalidArgumentException::class, static fn(): Example => Example::create()->value([])->serializedValue('[]'));
+    }
 }

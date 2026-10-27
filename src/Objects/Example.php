@@ -10,7 +10,8 @@ use Ark4ne\OpenApiWriter\Metadata\Field;
 use Ark4ne\OpenApiWriter\Support\Undefined;
 
 /**
- * An example value. `value` and `externalValue` are mutually exclusive.
+ * An example value. `value` excludes `dataValue`, `serializedValue` and `externalValue`; `serializedValue` excludes
+ * `externalValue`.
  *
  * @see https://spec.openapis.org/oas/v3.2.0.html#example-object
  *
@@ -64,8 +65,7 @@ final class Example extends ExtensibleSpecObject implements ExampleContract
     public function serializedValue(?string $serializedValue): static
     {
         if ($serializedValue !== null) {
-            $this->exclusiveOf('serializedValue', 'value');
-            $this->exclusiveOf('serializedValue', 'externalValue');
+            $this->exclusiveOf('serializedValue', 'value', 'externalValue');
         }
 
         return $this->with('serializedValue', $serializedValue);
@@ -76,9 +76,7 @@ final class Example extends ExtensibleSpecObject implements ExampleContract
      */
     public function value(mixed $value): static
     {
-        $this->exclusiveOf('value', 'externalValue');
-        $this->exclusiveOf('value', 'dataValue');
-        $this->exclusiveOf('value', 'serializedValue');
+        $this->exclusiveOf('value', 'externalValue', 'dataValue', 'serializedValue');
 
         return $this->with('value', $value);
     }
@@ -86,8 +84,7 @@ final class Example extends ExtensibleSpecObject implements ExampleContract
     public function externalValue(?string $externalValue): static
     {
         if ($externalValue !== null) {
-            $this->exclusiveOf('externalValue', 'value');
-            $this->exclusiveOf('externalValue', 'serializedValue');
+            $this->exclusiveOf('externalValue', 'value', 'serializedValue');
         }
 
         return $this->with('externalValue', $externalValue);

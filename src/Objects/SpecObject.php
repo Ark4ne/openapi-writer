@@ -145,15 +145,20 @@ abstract class SpecObject
     }
 
     /**
-     * Guards a field that the specification forbids next to another one in every version (`value` and
-     * `externalValue`…): setting it while the other is set throws. An empty collection does not count as set.
+     * Guards a field that the specification forbids next to other ones in every version (`value` and
+     * `externalValue`…): setting it while one of them is set throws. An empty collection does not count as set; an
+     * empty array in a free-value field (`example([])`) is a value and does.
      *
-     * @throws InvalidArgumentException when $other is set
+     * @throws InvalidArgumentException when one of $others is set
      */
-    protected function exclusiveOf(string $field, string $other): void
+    protected function exclusiveOf(string $field, string ...$others): void
     {
-        if ($this->has($other) && $this->__get($other) !== []) {
-            throw InvalidArgumentException::forField(static::class, $field, sprintf('%s and %s are mutually exclusive', $other, $field));
+        $metadata = MetadataFactory::for(static::class);
+
+        foreach ($others as $other) {
+            if ($this->has($other) && ($metadata->isFreeValue($other) || $this->__get($other) !== [])) {
+                throw InvalidArgumentException::forField(static::class, $field, sprintf('%s and %s are mutually exclusive', $other, $field));
+            }
         }
     }
 

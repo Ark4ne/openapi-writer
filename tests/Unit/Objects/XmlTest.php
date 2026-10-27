@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Tests\Unit\Objects;
 
+use Ark4ne\OpenApiWriter\Enums\XmlNodeType;
 use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Objects\Xml;
 
@@ -17,7 +18,7 @@ final class XmlTest extends ExtensibleSpecObjectTestCase
     public static function fields(): array
     {
         return [
-            'nodeType' => [['element'], 'element'],
+            'nodeType' => [[XmlNodeType::Element], XmlNodeType::Element],
             'name' => [['animal'], 'animal'],
             'namespace' => [['https://example.com/schema/sample'], 'https://example.com/schema/sample'],
             'prefix' => [['sample'], 'sample'],
@@ -40,5 +41,10 @@ final class XmlTest extends ExtensibleSpecObjectTestCase
         $this->expectExceptionMessage('Xml::nodeType');
 
         Xml::create()->nodeType('comment');
+    }
+
+    public function test_node_type_accepts_the_value_of_a_case(): void
+    {
+        self::assertSame(XmlNodeType::Cdata, Xml::create()->nodeType('cdata')->nodeType);
     }
 }

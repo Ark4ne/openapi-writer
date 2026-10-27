@@ -157,7 +157,10 @@ dans les signatures.
   `Example.value` / `externalValue` / `dataValue` / `serializedValue` (`value` exclut les trois autres,
   `serializedValue` exclut `externalValue`), `encoding` / `prefixEncoding` + `itemEncoding` (`MediaType`,
   `Encoding`), `Xml.nodeType` / `attribute` + `wrapped`. Une collection vide ne compte pas comme définie.
-- `Xml::nodeType()` n'accepte que `element`, `attribute`, `text`, `cdata` et `none`.
+  `exclusiveOf($field, ...$others)` porte la règle, dans la base `SpecObject`.
+- `Xml.nodeType` est une enum (`XmlNodeType`), comme les autres valeurs fermées.
+- Dans un champ à valeur libre (`example`, `value`, `dataValue`), un tableau vide est une valeur : il compte comme
+  défini pour les champs exclusifs.
 - `Schema::type()` sans argument retire le type.
 - `Operation::responses()` accepte un `Responses` ou des réponses qu'il enveloppe : c'est le seul setter qui ne se
   réduit pas à un appel de `with()`.

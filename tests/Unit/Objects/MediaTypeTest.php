@@ -89,4 +89,9 @@ final class MediaTypeTest extends ExtensibleSpecObjectTestCase
         self::assertSame([$item], MediaType::multipart()->prefixEncoding()->encoding()->prefixEncoding($item)->prefixEncoding);
         self::assertSame([], MediaType::multipart()->itemEncoding($item)->itemEncoding(null)->encoding()->encoding);
     }
+
+    public function test_an_empty_array_example_excludes_examples(): void
+    {
+        self::assertThrows(InvalidArgumentException::class, static fn(): MediaType => MediaType::json()->example([])->examples(Example::create('one')->value(1)));
+    }
 }

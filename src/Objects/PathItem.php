@@ -181,9 +181,9 @@ final class PathItem extends ExtensibleSpecObject implements PathItemContract
 
         foreach ($operations as $operation) {
             $objectId = $operation->objectId ?? throw MissingObjectIdException::forField(self::class, 'operations');
-            $method = strtolower($objectId);
+            $method = self::fixedMethod($objectId)?->value;
 
-            if (HttpMethod::tryFrom($method) === null) {
+            if ($method === null) {
                 $pathItem = $pathItem->withAdded('additionalOperations', [$operation]);
             } elseif ($pathItem->has($method)) {
                 throw DuplicateObjectIdException::forField(self::class, $method, $method);
@@ -203,11 +203,19 @@ final class PathItem extends ExtensibleSpecObject implements PathItemContract
     private static function rejectFixedMethods(array $operations): void
     {
         foreach ($operations as $operation) {
-            $method = HttpMethod::tryFrom(strtolower($operation->objectId ?? ''));
+            $method = self::fixedMethod($operation->objectId ?? '');
 
             if ($method !== null) {
                 throw InvalidArgumentException::forField(self::class, 'additionalOperations', sprintf('%s is a fixed method, set it with %s()', $operation->objectId, $method->value));
             }
         }
+    }
+
+    /**
+     * The fixed method named by an objectId, whatever its case.
+     */
+    private static function fixedMethod(string $objectId): ?HttpMethod
+    {
+        return HttpMethod::tryFrom(strtolower($objectId));
     }
 }
