@@ -110,6 +110,19 @@ final class Document
      */
     public static function resolve(array $document, mixed $node): mixed
     {
+        return self::target($document, $node, JsonPointer::root())[1] ?? null;
+    }
+
+    /**
+     * Follows the local `$ref` of $node, found at $pointer, until a node without one, and gives that node with its
+     * place in the document; a reference that does not resolve, or a cycle, gives null.
+     *
+     * @param array<string, mixed> $document
+     *
+     * @return array{JsonPointer, mixed}|null
+     */
+    public static function target(array $document, mixed $node, JsonPointer $pointer): ?array
+    {
         $seen = [];
 
         while (is_array($node) && isset($node['$ref'])) {
@@ -125,9 +138,11 @@ final class Document
             if (!$found) {
                 return null;
             }
+
+            $pointer = JsonPointer::fromString(rawurldecode(substr($reference, 1)));
         }
 
-        return $node;
+        return [$pointer, $node];
     }
 
     /**

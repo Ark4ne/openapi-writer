@@ -65,5 +65,5 @@ en fait passer une partie au vert.
 | 2026-10-27 | Version déclarée par le champ `OpenApi::openapi()` (et non `OpenApi::create(Version)`, dont l'argument est l'`objectId`) |
 | 2026-10-27 | Ordre des mots-clés de `Schema` : celui de la sortie GoldSpec, ajouts 2020-12 placés dans leur famille (snapshots du générateur) |
 | 2026-10-28 | Validation JSON Schema : `opis/json-schema` retenu (`justinrainbow/json-schema` ne lit pas draft 2020-12), derrière le port `JsonSchemaValidator` et en `suggest` |
-| 2026-10-28 | Immuabilité conservée : 500 opérations se construisent en 15 ms environ, aussi vite avec `addPaths()` chemin par chemin qu'en un appel ; écriture en 3.0.4 en 85 ms, 12 Mo de pic (PHP 8.5, `composer benchmark`) |
+| 2026-10-28 | Immuabilité conservée : 500 opérations se construisent en 14 ms environ, `addPaths()` chemin par chemin coûtant 2 % de plus qu'un seul appel (7 % à 2 500 opérations) ; écriture en 3.0.4 en 84 ms, 12 Mo de pic (PHP 8.5, médiane de 15 passages après préchauffage, `composer benchmark`) |
 | 2026-10-28 | Exceptions immédiates réservées aux valeurs interdites dans toutes les versions (code de statut, champs exclusifs, doublon de `Schema.type`, `objectId` manquant ou en double, méthode fixe dans `additionalOperations`) ; les incohérences entre objets relèvent du validateur |

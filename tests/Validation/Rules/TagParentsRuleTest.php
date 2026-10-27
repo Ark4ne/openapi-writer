@@ -46,4 +46,15 @@ final class TagParentsRuleTest extends RuleTestCase
             ['/tags/2/parent', Severity::Error],
         ], self::check('tag-parents-cycle', Version::V3_2_0));
     }
+
+    /**
+     * A tag declared twice keeps each of its parents: the second `a`, without parent, does not hide the cycle.
+     */
+    public function test_a_tag_declared_twice_keeps_the_parent_of_each_declaration(): void
+    {
+        self::assertSame([
+            ['/tags/0/parent', Severity::Error],
+            ['/tags/1/parent', Severity::Error],
+        ], self::check('tag-parents-duplicate', Version::V3_2_0));
+    }
 }

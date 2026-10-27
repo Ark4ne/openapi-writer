@@ -301,7 +301,7 @@ try {
 // ['[dropped] /webhooks: webhooks needs 3.1.0',
 //  '[converted] /components/schemas/Pet/properties/birthday: nullable written as nullable: true']
 $result = Serializer::for(Version::V3_0_4, Strictness::Lenient)->serialize($withWebhook);
-$json = $result->toJson();
+$json30 = $result->toJson();
 $diagnostics = array_map('strval', $result->diagnostics()->all());
 ```
 

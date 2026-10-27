@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Ark4ne\OpenApiWriter\Tests\Validation\Rules;
 
 use Ark4ne\OpenApiWriter\Enums\Version;
+use Ark4ne\OpenApiWriter\Tests\Support\Fixtures;
 use Ark4ne\OpenApiWriter\Tests\Validation\RuleTestCase;
 use Ark4ne\OpenApiWriter\Validation\Rule;
 use Ark4ne\OpenApiWriter\Validation\Rules\PathParametersRule;
 use Ark4ne\OpenApiWriter\Validation\Severity;
+use Ark4ne\OpenApiWriter\Validation\Violations;
 
 final class PathParametersRuleTest extends RuleTestCase
 {
@@ -41,5 +43,21 @@ final class PathParametersRuleTest extends RuleTestCase
             ['/paths/~1apps~1{app}/get', Severity::Error],
             ['/paths/~1apps~1{app}', Severity::Error],
         ], self::check('path-parameters-references', Version::V3_1_2));
+    }
+
+    /**
+     * An operation of the target is reported at the reference, but the message names it where it is written.
+     */
+    public function test_the_message_names_an_operation_of_the_target_where_it_is_written(): void
+    {
+        $violations = new Violations();
+
+        self::rule()->check(Fixtures::document(Version::V3_1_2, 'validation/path-parameters-references'), Version::V3_1_2, $violations);
+
+        self::assertSame([
+            '/components/pathItems/Team/get has no required in: path parameter for {team}',
+            '/paths/~1apps~1{app}/get has no required in: path parameter for {app}',
+            '/components/pathItems/Plain/delete has no required in: path parameter for {app}',
+        ], array_map(static fn($violation): string => $violation->message, $violations->all()));
     }
 }

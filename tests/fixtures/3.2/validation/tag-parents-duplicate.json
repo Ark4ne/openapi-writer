@@ -1,0 +1,21 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "tags": [
+        {
+            "name": "a",
+            "parent": "b"
+        },
+        {
+            "name": "b",
+            "parent": "a"
+        },
+        {
+            "name": "a"
+        }
+    ]
+}

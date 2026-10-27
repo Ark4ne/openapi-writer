@@ -24,7 +24,7 @@ Every check below runs in the CI on each push and pull request.
 | `composer progress` | Rebuilds the progress table of `docs/README.md` from the milestone checklists |
 | `composer ci` | Every blocking check except coverage and mutation |
 | `composer fixtures:update` | Rewrites the expected JSON files from the current output: review the diff |
-| `composer benchmark` | Builds and writes a document of 500 operations, and prints the timings |
+| `composer benchmark` | Builds and writes a document of 500 operations, and prints the median timings |
 
 ## Workflow
 

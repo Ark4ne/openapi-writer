@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 /*
- * Measures the cost of immutability: builds a document of N operations, once with every path given in one call and
- * once path by path with addPaths() (one clone of the whole map per call), then writes it.
+ * Measures the cost of immutability: builds a document of N operations (five per resource, so N is rounded up to a
+ * multiple of 5), once with every path given in one call and once path by path with addPaths() (one clone of the
+ * whole map per call), then writes it. After a warmup run, both builds alternate and the median of each is printed.
  *
- * Usage: php bin/benchmark.php [operations = 500]
+ * Usage: php bin/benchmark.php [operations = 500] [runs = 15]
  */
 
 use Ark4ne\OpenApiWriter\Enums\Version;
@@ -24,9 +25,10 @@ use Ark4ne\OpenApiWriter\Objects\Schema;
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 $operations = (int) ($argv[1] ?? 500);
+$runs = (int) ($argv[2] ?? 15);
 
-if ($operations < 1) {
-    fwrite(STDERR, 'Usage: php bin/benchmark.php [operations = 500]' . PHP_EOL);
+if ($operations < 1 || $runs < 1) {
+    fwrite(STDERR, 'Usage: php bin/benchmark.php [operations = 500] [runs = 15]' . PHP_EOL);
     exit(1);
 }
 
@@ -69,41 +71,67 @@ $schema = static fn(int $index): Schema => Schema::object('resource' . $index)
 $resources = intdiv($operations + 4, 5);
 $info = Info::create()->title('Benchmark')->version('1.0.0');
 
-$start = hrtime(true);
-$paths = [];
-$schemas = [];
+$atOnce = static function () use ($resources, $resource, $schema, $info): OpenApi {
+    $paths = [];
+    $schemas = [];
 
-for ($index = 0; $index < $resources; $index++) {
-    $paths = [...$paths, ...$resource($index)];
-    $schemas[] = $schema($index);
-}
+    for ($index = 0; $index < $resources; $index++) {
+        $paths[] = $resource($index);
+        $schemas[] = $schema($index);
+    }
 
-$atOnce = OpenApi::create()->info($info)->paths(...$paths)->components(Components::create()->schemas(...$schemas));
-$atOnceMs = (hrtime(true) - $start) / 1e6;
+    return OpenApi::create()->info($info)->paths(...array_merge(...$paths))->components(Components::create()->schemas(...$schemas));
+};
 
-$start = hrtime(true);
-$oneByOne = OpenApi::create()->info($info)->paths();
-$components = Components::create();
+$oneByOne = static function () use ($resources, $resource, $schema, $info): OpenApi {
+    $document = OpenApi::create()->info($info)->paths();
+    $components = Components::create();
 
-for ($index = 0; $index < $resources; $index++) {
-    $oneByOne = $oneByOne->addPaths(...$resource($index));
-    $components = $components->addSchemas($schema($index));
-}
+    for ($index = 0; $index < $resources; $index++) {
+        $document = $document->addPaths(...$resource($index));
+        $components = $components->addSchemas($schema($index));
+    }
 
-$oneByOne = $oneByOne->components($components);
-$oneByOneMs = (hrtime(true) - $start) / 1e6;
+    return $document->components($components);
+};
 
-$start = hrtime(true);
-$json = $oneByOne->toJson(Version::V3_0_4);
-$writeMs = (hrtime(true) - $start) / 1e6;
+// Warmup: autoloading, the metadata cache and the first writes are paid before any measure.
+$json = $atOnce()->toJson(Version::V3_0_4);
 
-if ($json !== $atOnce->toJson(Version::V3_0_4)) {
+if ($json !== $oneByOne()->toJson(Version::V3_0_4)) {
     fwrite(STDERR, 'Both documents should be identical.' . PHP_EOL);
     exit(1);
 }
 
-printf("PHP %s, %d operations, %d paths, %d schemas, %.0f KiB of JSON\n", PHP_VERSION, $resources * 5, $resources * 2, $resources, strlen($json) / 1024);
-printf("%-34s %8.1f ms\n", 'Build, paths given at once', $atOnceMs);
-printf("%-34s %8.1f ms\n", 'Build, addPaths() path by path', $oneByOneMs);
-printf("%-34s %8.1f ms\n", 'Write as 3.0.4 JSON', $writeMs);
+$timings = ['atOnce' => [], 'oneByOne' => [], 'write' => []];
+
+for ($run = 0; $run < $runs; $run++) {
+    $start = hrtime(true);
+    $atOnce();
+    $timings['atOnce'][] = (hrtime(true) - $start) / 1e6;
+
+    $start = hrtime(true);
+    $document = $oneByOne();
+    $timings['oneByOne'][] = (hrtime(true) - $start) / 1e6;
+
+    $start = hrtime(true);
+    $document->toJson(Version::V3_0_4);
+    $timings['write'][] = (hrtime(true) - $start) / 1e6;
+}
+
+printf("PHP %s, %d operations, %d paths, %d schemas, %.0f KiB of JSON, median of %d runs\n", PHP_VERSION, $resources * 5, $resources * 2, $resources, strlen($json) / 1024, $runs);
+printf("%-34s %8.2f ms\n", 'Build, paths given at once', median($timings['atOnce']));
+printf("%-34s %8.2f ms\n", 'Build, addPaths() path by path', median($timings['oneByOne']));
+printf("%-34s %8.2f ms\n", 'Write as 3.0.4 JSON', median($timings['write']));
 printf("%-34s %8.1f MiB\n", 'Peak memory', memory_get_peak_usage(true) / 1048576);
+
+/**
+ * @param list<float> $timings at least one
+ */
+function median(array $timings): float
+{
+    sort($timings);
+    $middle = intdiv(count($timings), 2);
+
+    return count($timings) % 2 === 1 ? $timings[$middle] ?? 0.0 : (($timings[$middle - 1] ?? 0.0) + ($timings[$middle] ?? 0.0)) / 2;
+}

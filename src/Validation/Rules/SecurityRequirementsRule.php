@@ -62,8 +62,8 @@ final class SecurityRequirementsRule implements Rule
 
     /**
      * The security scheme a requirement names, references followed: false when it does not exist, null when it
-     * cannot be read. From 3.2, a name that is not a component is a URI: a local one must resolve, an external one is
-     * not checked.
+     * cannot be read. From 3.2, a name that is not a component and holds a `/` or a `#` is a URI: a local one must
+     * resolve, an external one is not checked. Any other name (`oauth:main`) is a component name.
      *
      * @param array<string, mixed> $document
      */
@@ -75,7 +75,7 @@ final class SecurityRequirementsRule implements Rule
             return Document::resolve($document, $schemes[$name]);
         }
 
-        if (!$version->isAtLeast(Version::V3_2_0) || !str_contains($name, '/') && !str_contains($name, ':') && !str_starts_with($name, '#')) {
+        if (!$version->isAtLeast(Version::V3_2_0) || !str_contains($name, '/') && !str_contains($name, '#')) {
             return false;
         }
 

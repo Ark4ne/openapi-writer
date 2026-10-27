@@ -19,6 +19,11 @@ final class ReadmeTest extends TestCase
 {
     private const README = __DIR__ . '/../../README.md';
 
+    /**
+     * @var array<string, mixed>|null the variables of the examples, run once for the three tests
+     */
+    private static ?array $variables = null;
+
     public function test_the_quick_start_writes_the_expected_document(): void
     {
         $openApi = self::examples()['openApi'] ?? null;
@@ -54,14 +59,24 @@ final class ReadmeTest extends TestCase
             ],
             $variables['diagnostics'] ?? null,
         );
+        self::assertIsString($variables['json30'] ?? null);
+        self::assertValidOpenApi($variables['json30'], Version::V3_0_4);
     }
 
     /**
-     * Runs every `php` block of the README and returns the variables it defines.
+     * The variables defined by the `php` blocks of the README, run in order as one script.
      *
      * @return array<string, mixed>
      */
     private static function examples(): array
+    {
+        return self::$variables ??= self::execute();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function execute(): array
     {
         $readme = (string) file_get_contents(self::README);
 

@@ -23,9 +23,14 @@ final class TagParentsRule implements Rule
 
         $parents = [];
 
+        // A name declared twice keeps the parents of both declarations.
         foreach (Document::entries($document['tags'] ?? null) as $tag) {
             if (is_array($tag) && is_string($tag['name'] ?? null)) {
-                $parents[$tag['name']] = is_string($tag['parent'] ?? null) ? $tag['parent'] : null;
+                $parents[$tag['name']] ??= [];
+
+                if (is_string($tag['parent'] ?? null)) {
+                    $parents[$tag['name']][] = $tag['parent'];
+                }
             }
         }
 
@@ -38,26 +43,33 @@ final class TagParentsRule implements Rule
 
             if (!array_key_exists($tag['parent'], $parents)) {
                 $violations->add(new Violation($pointer, self::class, sprintf('parent tag "%s" is not declared', $tag['parent'])));
-            } elseif (self::inCycle($tag['name'], $parents)) {
+            } elseif (self::isAncestor($tag['name'], $tag['parent'], $parents)) {
                 $violations->add(new Violation($pointer, self::class, sprintf('tag "%s" is its own ancestor', $tag['name'])));
             }
         }
     }
 
     /**
-     * @param array<string, string|null> $parents parent of each declared tag
+     * Whether $name is $parent or one of its ancestors.
+     *
+     * @param array<string, list<string>> $parents parents of each declared tag
      */
-    private static function inCycle(string $name, array $parents): bool
+    private static function isAncestor(string $name, string $parent, array $parents): bool
     {
-        $ancestor = $parents[$name] ?? null;
+        $pending = [$parent];
+        $seen = [];
 
-        // A tag outside the cycle reaches it, but never comes back to itself: count($parents) steps are enough.
-        for ($step = 0; $ancestor !== null && $step < count($parents); ++$step) {
+        while ($pending !== []) {
+            $ancestor = array_pop($pending);
+
             if ($ancestor === $name) {
                 return true;
             }
 
-            $ancestor = $parents[$ancestor] ?? null;
+            if (!isset($seen[$ancestor])) {
+                $seen[$ancestor] = true;
+                $pending = [...$pending, ...$parents[$ancestor] ?? []];
+            }
         }
 
         return false;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Validation;
 
+use Ark4ne\OpenApiWriter\Exceptions\ClassName;
 use Ark4ne\OpenApiWriter\Support\JsonPointer;
 use Stringable;
 
@@ -27,8 +28,6 @@ final readonly class Violation implements Stringable
      */
     public function __toString(): string
     {
-        $rule = strrchr($this->rule, '\\');
-
-        return sprintf('[%s] %s: %s (%s)', $this->severity->value, $this->pointer->toString(), $this->message, $rule === false ? $this->rule : substr($rule, 1));
+        return sprintf('[%s] %s: %s (%s)', $this->severity->value, $this->pointer->toString(), $this->message, ClassName::short($this->rule));
     }
 }

@@ -29,18 +29,23 @@ final class PathParametersRule implements Rule
             }
 
             // The fields written next to a `$ref` and those of its target both apply. An operation of the target is
-            // reported at the reference, the place a fix happens.
+            // reported at the reference, the place a fix happens, and named where it is written.
             $pointer = JsonPointer::root()->append('paths', $path);
-            $target = isset($entry['$ref']) ? Document::resolve($document, $entry) : null;
-            $sources = is_array($target) ? [[$entry, false], [$target, true]] : [[$entry, false]];
+            $target = isset($entry['$ref']) ? Document::target($document, $entry, $pointer) : null;
+            $sources = [[$entry, $pointer, false]];
+
+            if ($target !== null && is_array($target[1])) {
+                $sources[] = [$target[1], $target[0], true];
+            }
+
             $declared = [];
 
             foreach ($sources as [$pathItem]) {
                 $declared = [...$declared, ...self::declared($document, $pathItem)];
             }
 
-            foreach ($sources as [$pathItem, $isTarget]) {
-                foreach (Document::operationsOf($pathItem, $pointer) as [$operationPointer, $operation]) {
+            foreach ($sources as [$pathItem, $itemPointer, $isTarget]) {
+                foreach (Document::operationsOf($pathItem, $itemPointer) as [$operationPointer, $operation]) {
                     $missing = array_diff($matches[1], [...$declared, ...self::declared($document, $operation)]);
 
                     if ($missing !== []) {

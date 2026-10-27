@@ -32,3 +32,18 @@
   sur le job `coverage`, à configurer avec le dépôt GitHub.
 - Restent bloqués par la création du dépôt GitHub (M0) : badges, CI verte sur `main`, tag `v1.0.0` et publication
   Packagist. L'intégration dans `laravel-openapi-generator` se fait dans ce dépôt-là.
+
+## Notes de revue
+
+- `bin/benchmark.php` : un passage de préchauffage précède les mesures (autoload, cache de métadonnées, premières
+  écritures), les deux constructions alternent et la médiane est affichée ; la référence « en un appel » accumule
+  les chemins sans recopie quadratique ; le nombre d'opérations, arrondi au multiple de 5, est annoncé. La première
+  mesure avantageait `addPaths()` ; la décision donne les chiffres corrigés.
+- `PathParametersRule` : une opération de la cible d'un `$ref` reste signalée à la référence, mais le message la
+  nomme à sa place réelle (`/components/pathItems/Team/get`).
+- `TagParentsRule` : un nom de tag déclaré deux fois garde les parents de chaque déclaration ; la recherche de cycle
+  parcourt tous les parents.
+- `SecurityRequirementsRule` : en 3.2, seul un nom contenant `/` ou `#` est une URI ; `oauth:main` est un nom de
+  composant et doit être déclaré.
+- `Violation::__toString()` réutilise `ClassName::short()`. `ReadmeTest` exécute le README une seule fois et valide
+  aussi la sortie 3.0.4 du mode permissif contre le schéma officiel.
