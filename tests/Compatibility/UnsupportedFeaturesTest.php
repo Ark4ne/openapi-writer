@@ -115,6 +115,25 @@ final class UnsupportedFeaturesTest extends TestCase
                 Version::V3_1_0,
                 ['/paths/~1hooks/post/callbacks/onEvent/{$request.body#~1url}/post/security/0/ApiKey'],
             ],
+            'content-media-type-with-encoding' => [
+                static fn(): OpenApi => self::components(Components::create()->schemas(Schema::string('Archive')->contentMediaType('application/zip')->contentEncoding('base64url'))),
+                Version::V3_1_0,
+                ['/components/schemas/Archive/contentMediaType', '/components/schemas/Archive/contentEncoding'],
+            ],
+            'const-outside-the-enum' => [
+                static fn(): OpenApi => self::components(Components::create()->schemas(Schema::string('Role')->enum('member')->const('admin'))),
+                Version::V3_1_0,
+                ['/components/schemas/Role/const'],
+            ],
+            'non-oauth-scopes-in-a-component-callback' => [
+                static fn(): OpenApi => self::components(Components::create()
+                    ->callbacks(Callback::create('onEvent')->pathItems(PathItem::create('{$request.body#/url}')->post(
+                        Operation::post()->responses(Response::ok())->security(SecurityRequirement::create()->schemes(['ApiKey' => ['read']])),
+                    )))
+                    ->securitySchemes(SecurityScheme::apiKey('ApiKey')->name('X-API-Key')->in('header'))),
+                Version::V3_1_0,
+                ['/components/callbacks/onEvent/{$request.body#~1url}/post/security/0/ApiKey'],
+            ],
             'self' => [
                 static fn(): OpenApi => Documents::compatibility()->self('https://api.example.com/openapi.json'),
                 Version::V3_2_0,

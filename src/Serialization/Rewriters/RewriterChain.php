@@ -23,14 +23,15 @@ final readonly class RewriterChain
     }
 
     /**
-     * The library's chain. The order matters where rewriters combine (`nullable` + `$ref` + several types).
+     * The library's chain. The order matters where rewriters combine (`nullable` + `$ref` + several types):
+     * NullableWithoutTypeRewriter comes after the other Schema rewriters, so that the branch it builds holds keywords
+     * already written for the version.
      */
     public static function default(): self
     {
         return new self(
             new OpenApiVersionRewriter(),
             new NullableRewriter(),
-            new NullableWithoutTypeRewriter(),
             new NullTypeRewriter(),
             new ExclusiveBoundsRewriter(),
             new ConstRewriter(),
@@ -40,6 +41,7 @@ final readonly class RewriterChain
             new ContentMediaTypeRewriter(),
             new ContentEncodingRewriter(),
             new BooleanSchemaRewriter(),
+            new NullableWithoutTypeRewriter(),
             new ResponseDescriptionRewriter(),
             new EmptyPathsRewriter(),
             new NonOAuthScopesRewriter(),

@@ -1,0 +1,33 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "schemas": {
+            "Level": {
+                "anyOf": [
+                    {
+                        "enum": [
+                            1
+                        ],
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "not": {
+                            "not": {}
+                        }
+                    },
+                    {
+                        "enum": [
+                            null
+                        ],
+                        "type": "object",
+                        "nullable": true
+                    }
+                ]
+            }
+        }
+    }
+}

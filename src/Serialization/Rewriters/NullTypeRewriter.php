@@ -38,7 +38,12 @@ final class NullTypeRewriter implements Rewriter
 
         if ($types === []) {
             $types = [SchemaType::Object->value];
-            $node['enum'] = [null];
+            $enum = $node['enum'] ?? null;
+
+            // An enum without null accepts nothing next to a null type, in every version: it is kept as is.
+            if (!is_array($enum) || in_array(null, $enum, true)) {
+                $node['enum'] = [null];
+            }
         }
 
         $node['type'] = $types;

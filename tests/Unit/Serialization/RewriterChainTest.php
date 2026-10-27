@@ -26,7 +26,6 @@ final class RewriterChainTest extends TestCase
         self::assertSame([
             Rewriters\OpenApiVersionRewriter::class,
             Rewriters\NullableRewriter::class,
-            Rewriters\NullableWithoutTypeRewriter::class,
             Rewriters\NullTypeRewriter::class,
             Rewriters\ExclusiveBoundsRewriter::class,
             Rewriters\ConstRewriter::class,
@@ -36,6 +35,7 @@ final class RewriterChainTest extends TestCase
             Rewriters\ContentMediaTypeRewriter::class,
             Rewriters\ContentEncodingRewriter::class,
             Rewriters\BooleanSchemaRewriter::class,
+            Rewriters\NullableWithoutTypeRewriter::class,
             Rewriters\ResponseDescriptionRewriter::class,
             Rewriters\EmptyPathsRewriter::class,
             Rewriters\NonOAuthScopesRewriter::class,

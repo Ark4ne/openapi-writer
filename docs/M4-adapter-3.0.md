@@ -65,4 +65,17 @@
 - Non exprimables ajoutés : un `contentEncoding` autre que `base64` (`content-encoding`) ; les scopes hors OAuth2
   sont aussi cherchés dans les opérations des callbacks (`non-oauth-scopes-in-a-callback`).
 - Un `format` déjà défini l'emporte sur `binary` / `byte`.
+- Revue de code appliquée :
+  - `NullableWithoutTypeRewriter` passe après les autres rewriters de `Schema` : la branche de l'`anyOf` reçoit des
+    mots-clés déjà écrits pour 3.0 (`nullable-without-type-with-conversions`), triés dans l'ordre des champs ;
+  - un `$ref` nullable avec des contraintes voisines voit sa branche enveloppée dans un `allOf`
+    (`nullable-on-a-ref-with-constraints`) ;
+  - les scopes hors OAuth2 sont aussi cherchés dans `components.callbacks`
+    (`non-oauth-scopes-in-a-component-callback`) ;
+  - un `contentMediaType` dont l'encodage n'est pas `base64` est non exprimable
+    (`content-media-type-with-encoding`) ;
+  - un type `null` seul garde un `enum` sans `null`, qui n'accepte rien dans toutes les versions
+    (`null-type-with-enum`) ;
+  - `const(null)` sans type devient le schéma « null seul » (`const-null`), et une constante hors de l'`enum` est
+    non exprimable (`const-outside-the-enum`).
 - Restent rouges : la suite Validation (M6).

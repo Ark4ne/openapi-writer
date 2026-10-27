@@ -138,6 +138,22 @@ final class ConversionsTest extends TestCase
                 static fn(): OpenApi => self::schemas(Schema::create('Never')->not(true), Schema::create('Always')->not(false)),
                 ['3.0' => [$schema . 'Never', $schema . 'Always'], '3.1' => [], '3.2' => []],
             ],
+            'nullable-without-type-with-conversions' => [
+                static fn(): OpenApi => self::schemas(Schema::create('Level')->const(1)->exclusiveMinimum(0)->not(false)->nullable(true)),
+                ['3.0' => array_fill(0, 4, $schema . 'Level'), '3.1' => [$schema . 'Level'], '3.2' => [$schema . 'Level']],
+            ],
+            'nullable-on-a-ref-with-constraints' => [
+                static fn(): OpenApi => self::schemas(Schema::ref('User', 'Owner')->maxProperties(3)->nullable(true)),
+                ['3.0' => [$schema . 'Owner'], '3.1' => [$schema . 'Owner'], '3.2' => [$schema . 'Owner']],
+            ],
+            'null-type-with-enum' => [
+                static fn(): OpenApi => self::schemas(Schema::null('Nothing')->enum('a')),
+                ['3.0' => [$schema . 'Nothing'], '3.1' => [], '3.2' => []],
+            ],
+            'const-null' => [
+                static fn(): OpenApi => self::schemas(Schema::create('Nothing')->const(null)),
+                ['3.0' => [$schema . 'Nothing'], '3.1' => [], '3.2' => []],
+            ],
         ];
     }
 

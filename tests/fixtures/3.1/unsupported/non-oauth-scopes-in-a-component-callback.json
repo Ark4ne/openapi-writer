@@ -1,0 +1,37 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "components": {
+        "securitySchemes": {
+            "ApiKey": {
+                "type": "apiKey",
+                "name": "X-API-Key",
+                "in": "header"
+            }
+        },
+        "callbacks": {
+            "onEvent": {
+                "{$request.body#/url}": {
+                    "post": {
+                        "responses": {
+                            "200": {
+                                "description": "OK"
+                            }
+                        },
+                        "security": [
+                            {
+                                "ApiKey": [
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

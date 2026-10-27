@@ -14,8 +14,8 @@ use Ark4ne\OpenApiWriter\Serialization\Context;
  * are emptied so that the requirement stays.
  *
  * Supports the OpenApi object only: its node is the whole written document, where `components.securitySchemes`
- * gives the type of each scheme named by the `security` requirements of the document, of its operations and of the
- * operations of their callbacks. A scheme written as a Reference has no known type and is left as is.
+ * gives the type of each scheme named by the `security` requirements of the document, of its operations, of the
+ * operations of their callbacks and of the callbacks of the components. A scheme written as a Reference has no known type and is left as is.
  */
 final class NonOAuthScopesRewriter implements Rewriter
 {
@@ -51,6 +51,17 @@ final class NonOAuthScopesRewriter implements Rewriter
 
         if (is_array($node['paths'] ?? null)) {
             $node['paths'] = self::pathItems($node['paths'], $unscoped, $context->at('paths'));
+        }
+
+        if (is_array($components['callbacks'] ?? null)) {
+            $callbacks = $components['callbacks'];
+
+            foreach ($callbacks as $name => $callback) {
+                $callbacks[$name] = is_array($callback) ? self::pathItems($callback, $unscoped, $context->at('components', 'callbacks', $name)) : $callback;
+            }
+
+            $components['callbacks'] = $callbacks;
+            $node['components'] = $components;
         }
 
         return $node;

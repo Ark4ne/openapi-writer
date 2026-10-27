@@ -11,7 +11,8 @@ use Ark4ne\OpenApiWriter\Serialization\Context;
 
 /**
  * Binary content (`contentMediaType`): `format: binary` in 3.0, `contentMediaType` from 3.1. With a `contentEncoding`,
- * the content is text and ContentEncodingRewriter writes the format; a `format` already set is kept.
+ * the content is text: ContentEncodingRewriter writes the format of base64, any other encoding has no 3.0
+ * equivalent. A `format` already set is kept.
  */
 final class ContentMediaTypeRewriter implements Rewriter
 {
@@ -29,6 +30,10 @@ final class ContentMediaTypeRewriter implements Rewriter
         unset($node['contentMediaType']);
 
         if (isset($node['contentEncoding'])) {
+            if ($node['contentEncoding'] !== 'base64') {
+                $context->at('contentMediaType')->unsupported('contentMediaType of a content encoding other than base64 needs 3.1.0');
+            }
+
             return $node;
         }
 

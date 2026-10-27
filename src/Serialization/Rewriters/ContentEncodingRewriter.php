@@ -24,14 +24,14 @@ final class ContentEncodingRewriter implements Rewriter
     {
         $encoding = $node['contentEncoding'] ?? null;
 
-        if ($context->version->isAtLeast(Version::V3_1_0) || $encoding === null) {
+        if ($context->version->isAtLeast(Version::V3_1_0) || !is_string($encoding)) {
             return $node;
         }
 
         unset($node['contentEncoding']);
 
         if ($encoding !== 'base64') {
-            $context->at('contentEncoding')->unsupported(sprintf('contentEncoding "%s" needs 3.1.0', is_string($encoding) ? $encoding : ''));
+            $context->at('contentEncoding')->unsupported(sprintf('contentEncoding "%s" needs 3.1.0', $encoding));
 
             return $node;
         }
