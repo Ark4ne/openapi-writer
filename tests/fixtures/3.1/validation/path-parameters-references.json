@@ -1,0 +1,74 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/users/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "$ref": "#/components/parameters/Id"
+                }
+            ]
+        },
+        "/teams/{team}": {
+            "$ref": "#/components/pathItems/Team"
+        },
+        "/orgs/{org}": {
+            "$ref": "#/components/pathItems/Org"
+        }
+    },
+    "components": {
+        "parameters": {
+            "Id": {
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "Org": {
+                "name": "org",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            }
+        },
+        "pathItems": {
+            "Team": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    }
+                }
+            },
+            "Org": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Org"
+                    }
+                ]
+            }
+        }
+    }
+}

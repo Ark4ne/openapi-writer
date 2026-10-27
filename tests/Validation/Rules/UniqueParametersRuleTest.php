@@ -29,4 +29,12 @@ final class UniqueParametersRuleTest extends RuleTestCase
             ['/paths/~1users/parameters/1', Severity::Error],
         ], self::check('unique-parameters-invalid', Version::V3_1_2));
     }
+
+    /**
+     * A reference that does not resolve is left to LocalReferencesRule.
+     */
+    public function test_references_to_parameters_are_followed(): void
+    {
+        self::assertSame([['/paths/~1users/get/parameters/1', Severity::Error]], self::check('unique-parameters-references', Version::V3_1_2));
+    }
 }

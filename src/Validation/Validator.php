@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Validation;
 
+use Ark4ne\OpenApiWriter\Enums\Strictness;
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Objects\OpenApi;
+use Ark4ne\OpenApiWriter\Serialization\DiagnosticLevel;
+use Ark4ne\OpenApiWriter\Serialization\Serializer;
 
 /**
  * Writes a document for a version and checks it: official schema (when a JsonSchemaValidator is given), then every
  * rule (Composite). Never throws on an invalid document.
+ *
+ * The document is written in lenient mode: each feature the version cannot express becomes an error whose rule is
+ * `Serializer::class`. The written document is then not the one described, so neither the official schema nor the
+ * rules run on it: they would report the consequences of the removal (an empty document, a dangling reference).
  */
 final readonly class Validator
 {
@@ -27,7 +34,18 @@ final readonly class Validator
      */
     public static function create(?JsonSchemaValidator $schemaValidator = null): self
     {
-        return new self([], $schemaValidator);
+        return new self([
+            new Rules\UniqueOperationIdRule(),
+            new Rules\PathParametersRule(),
+            new Rules\UniqueParametersRule(),
+            new Rules\LocalReferencesRule(),
+            new Rules\SecurityRequirementsRule(),
+            new Rules\DeclaredTagsRule(),
+            new Rules\TagParentsRule(),
+            new Rules\EquivalentPathsRule(),
+            new Rules\NonEmptyDocumentRule(),
+            new Rules\ValueTypeRule(),
+        ], $schemaValidator);
     }
 
     /**
@@ -35,7 +53,7 @@ final readonly class Validator
      */
     public function withRules(Rule ...$rules): self
     {
-        return $this;
+        return new self([...$this->rules, ...array_values($rules)], $this->schemaValidator);
     }
 
     /**
@@ -45,7 +63,10 @@ final readonly class Validator
      */
     public function withoutRules(string ...$rules): self
     {
-        return $this;
+        return new self(
+            array_values(array_filter($this->rules, static fn(Rule $rule): bool => !in_array($rule::class, $rules, true))),
+            $this->schemaValidator,
+        );
     }
 
     /**
@@ -57,10 +78,30 @@ final readonly class Validator
     }
 
     /**
+     * @param Version|string|null $version default: the `openapi` field of the document, else 3.1.2
+     *
      * @throws InvalidArgumentException on an unknown version
      */
     public function validate(OpenApi $openApi, Version|string|null $version = null): Violations
     {
-        return new Violations();
+        $serializer = Serializer::for($version ?? ($openApi->openapi instanceof Version ? $openApi->openapi : null), Strictness::Lenient);
+        $result = $serializer->serialize($openApi);
+        $violations = new Violations();
+
+        foreach ($result->diagnostics()->ofLevel(DiagnosticLevel::Dropped) as $diagnostic) {
+            $violations->add(new Violation($diagnostic->pointer, Serializer::class, $diagnostic->message));
+        }
+
+        if (count($violations) > 0) {
+            return $violations;
+        }
+
+        $this->schemaValidator?->validate($result->toJson(), $serializer->version, $violations);
+
+        foreach ($this->rules as $rule) {
+            $rule->check($result->toArray(), $serializer->version, $violations);
+        }
+
+        return $violations;
     }
 }

@@ -29,4 +29,12 @@ final class PathParametersRuleTest extends RuleTestCase
             ['/paths/~1teams~1{team}/get', Severity::Error],
         ], self::check('path-parameters-invalid', Version::V3_1_2));
     }
+
+    /**
+     * A path item written as a `$ref` is reported at the reference.
+     */
+    public function test_references_to_parameters_and_path_items_are_followed(): void
+    {
+        self::assertSame([['/paths/~1teams~1{team}', Severity::Error]], self::check('path-parameters-references', Version::V3_1_2));
+    }
 }

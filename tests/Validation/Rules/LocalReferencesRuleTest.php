@@ -30,4 +30,17 @@ final class LocalReferencesRuleTest extends RuleTestCase
             ['/components/schemas/User/properties/team', Severity::Error],
         ], self::check('local-references-invalid', Version::V3_1_2));
     }
+
+    /**
+     * A `$ref` inside a schema with an `$id` resolves in that schema; free values and extensions are not read.
+     */
+    public function test_operation_refs_mappings_and_refs_of_schema_resources_are_checked(): void
+    {
+        self::assertSame([
+            ['/paths/~1users/get/responses/200/links/broken/operationRef', Severity::Error],
+            ['/components/schemas/Tree/properties/missing', Severity::Error],
+            ['/components/schemas/Pet/discriminator/mapping/cat', Severity::Error],
+            ['/components/schemas/Sample/properties/default', Severity::Error],
+        ], self::check('local-references-nested', Version::V3_1_2));
+    }
 }

@@ -12,10 +12,6 @@ parameters:
         - bin
     tmpDir: build/phpstan
     ignoreErrors:
-        # Until M6: the validation bodies are still neutral, so their documented @throws are not thrown yet.
-        -
-            identifier: throws.unusedType
-            path: src/Validation/*
 
 services:
     -

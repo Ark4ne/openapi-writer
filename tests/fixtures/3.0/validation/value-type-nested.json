@@ -1,0 +1,69 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/users": {
+            "get": {
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": "ten"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Nickname": {
+                "type": "string",
+                "nullable": true,
+                "default": null
+            },
+            "Count": {
+                "type": "integer",
+                "default": 1.0
+            },
+            "Name": {
+                "type": "string",
+                "default": null
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "age": {
+                        "type": "integer",
+                        "example": "old"
+                    }
+                }
+            },
+            "List": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "example": 1
+                }
+            },
+            "Mixed": {
+                "allOf": [
+                    {
+                        "type": "boolean",
+                        "default": "no"
+                    }
+                ]
+            }
+        }
+    }
+}

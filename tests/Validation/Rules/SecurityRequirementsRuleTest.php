@@ -29,4 +29,16 @@ final class SecurityRequirementsRuleTest extends RuleTestCase
             ['/security/0/Missing', Severity::Error],
         ], self::check('security-requirements-invalid', Version::V3_1_2));
     }
+
+    /**
+     * From 3.2 a requirement may name a scheme by URI: a local one must resolve, an external one is not checked.
+     * Scopes are checked through a reference to an OAuth2 scheme, and never for OpenID Connect.
+     */
+    public function test_uris_references_and_openid_connect_in_3_2(): void
+    {
+        self::assertSame([
+            ['/security/1/#~1components~1securitySchemes~1Gone', Severity::Error],
+            ['/security/3/Shared/0', Severity::Error],
+        ], self::check('security-requirements-uris', Version::V3_2_0));
+    }
 }

@@ -21,7 +21,10 @@ final class Violations implements Countable, IteratorAggregate
      */
     private array $violations = [];
 
-    public function add(Violation $violation): void {}
+    public function add(Violation $violation): void
+    {
+        $this->violations[] = $violation;
+    }
 
     /**
      * @return list<Violation>
@@ -36,7 +39,7 @@ final class Violations implements Countable, IteratorAggregate
      */
     public function errors(): array
     {
-        return [];
+        return $this->ofSeverity(Severity::Error);
     }
 
     /**
@@ -44,7 +47,7 @@ final class Violations implements Countable, IteratorAggregate
      */
     public function warnings(): array
     {
-        return [];
+        return $this->ofSeverity(Severity::Warning);
     }
 
     /**
@@ -52,12 +55,12 @@ final class Violations implements Countable, IteratorAggregate
      */
     public function isValid(): bool
     {
-        return false;
+        return $this->errors() === [];
     }
 
     public function count(): int
     {
-        return 0;
+        return count($this->violations);
     }
 
     /**
@@ -66,5 +69,13 @@ final class Violations implements Countable, IteratorAggregate
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->violations);
+    }
+
+    /**
+     * @return list<Violation>
+     */
+    private function ofSeverity(Severity $severity): array
+    {
+        return array_values(array_filter($this->violations, static fn(Violation $violation): bool => $violation->severity === $severity));
     }
 }

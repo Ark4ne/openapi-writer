@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ark4ne\OpenApiWriter\Tests\Validation;
 
 use Ark4ne\OpenApiWriter\Enums\Version;
+use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Objects\Info;
 use Ark4ne\OpenApiWriter\Objects\OpenApi;
 use Ark4ne\OpenApiWriter\Objects\Operation;
@@ -127,6 +128,11 @@ final class ValidatorTest extends TestCase
         $violations = Validator::create()->validate(Documents::webhookExample()->openapi(Version::V3_0_4));
 
         self::assertSame([['/webhooks', Serializer::class, Severity::Error]], self::summary($violations));
+    }
+
+    public function test_an_unknown_version_is_rejected(): void
+    {
+        self::assertThrows(InvalidArgumentException::class, static fn(): Violations => Validator::create()->validate(Documents::tictactoe(), '2.0'));
     }
 
     public function test_a_custom_rule_reports_its_own_violations(): void

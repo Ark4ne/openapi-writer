@@ -6,6 +6,7 @@ namespace Ark4ne\OpenApiWriter\Tests\Validation;
 
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Tests\Support\Fixtures;
+use Ark4ne\OpenApiWriter\Tests\Support\OfficialSchema;
 use Ark4ne\OpenApiWriter\Tests\TestCase;
 use Ark4ne\OpenApiWriter\Validation\OpisJsonSchemaValidator;
 use Ark4ne\OpenApiWriter\Validation\Severity;
@@ -110,6 +111,41 @@ final class OfficialSchemaTest extends TestCase
 
         self::assertSame([], $free->all());
         self::assertSame(['/components/schemas/Name/$schema'], array_map(static fn(Violation $violation): string => $violation->pointer->toString(), $base->all()));
+    }
+
+    /**
+     * Every document fixture of a line, valid or not: the adapter gives the same verdict, at the same pointers, as
+     * the test infrastructure that checks the fixtures (both adapt the official schemas to opis).
+     *
+     * @return iterable<string, array{string, Version}>
+     */
+    public static function documentFixtures(): iterable
+    {
+        foreach (['3.0' => Version::V3_0_4, '3.1' => Version::V3_1_2, '3.2' => Version::V3_2_0] as $line => $version) {
+            $files = glob(Fixtures::DIRECTORY . $line . '/*/*.json');
+
+            foreach ($files === false ? [] : $files as $file) {
+                $name = basename(dirname($file)) . '/' . basename($file, '.json');
+
+                if (str_contains((string) file_get_contents($file), '"openapi": ')) {
+                    yield $line . ' ' . $name => [$name, $version];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('documentFixtures')]
+    public function test_the_verdict_is_the_one_of_the_test_infrastructure(string $fixture, Version $version): void
+    {
+        $json = Fixtures::expected($version, $fixture);
+        $violations = new Violations();
+
+        (new OpisJsonSchemaValidator())->validate($json, $version, $violations);
+
+        self::assertSame(
+            array_keys(OfficialSchema::errors($json, $version)),
+            array_map(static fn(Violation $violation): string => $violation->pointer->toString(), $violations->all()),
+        );
     }
 
     public function test_invalid_json_is_a_violation_at_the_root(): void

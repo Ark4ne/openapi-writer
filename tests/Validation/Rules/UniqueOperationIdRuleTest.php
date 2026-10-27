@@ -29,4 +29,17 @@ final class UniqueOperationIdRuleTest extends RuleTestCase
             ['/webhooks/petCreated/post/operationId', Severity::Error],
         ], self::check('unique-operation-id-invalid', Version::V3_1_2));
     }
+
+    /**
+     * Operations of callbacks, additional operations and components count; extensions of `paths` do not.
+     */
+    public function test_operations_of_callbacks_additional_operations_and_components_count(): void
+    {
+        self::assertSame([
+            ['/paths/~1users/get/callbacks/onEvent/{$request.body#~1url}/post/operationId', Severity::Error],
+            ['/paths/~1users/additionalOperations/COPY/operationId', Severity::Error],
+            ['/components/callbacks/Hook/{$request.body#~1hook}/post/operationId', Severity::Error],
+            ['/components/pathItems/Ping/get/operationId', Severity::Error],
+        ], self::check('unique-operation-id-nested', Version::V3_2_0));
+    }
 }

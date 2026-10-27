@@ -46,4 +46,9 @@ final class NonEmptyDocumentRuleTest extends RuleTestCase
     {
         self::assertSame([['', Severity::Warning]], self::check('non-empty-document-invalid', $version));
     }
+
+    public function test_a_path_item_reference_to_operations_counts(): void
+    {
+        self::assertSame([], self::check('non-empty-document-reference', Version::V3_1_2));
+    }
 }

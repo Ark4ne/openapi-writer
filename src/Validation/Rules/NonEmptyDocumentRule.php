@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Ark4ne\OpenApiWriter\Validation\Rules;
 
 use Ark4ne\OpenApiWriter\Enums\Version;
+use Ark4ne\OpenApiWriter\Support\JsonPointer;
 use Ark4ne\OpenApiWriter\Validation\Rule;
+use Ark4ne\OpenApiWriter\Validation\Severity;
+use Ark4ne\OpenApiWriter\Validation\Violation;
 use Ark4ne\OpenApiWriter\Validation\Violations;
 
 /**
@@ -15,5 +18,18 @@ use Ark4ne\OpenApiWriter\Validation\Violations;
  */
 final class NonEmptyDocumentRule implements Rule
 {
-    public function check(array $document, Version $version, Violations $violations): void {}
+    public function check(array $document, Version $version, Violations $violations): void
+    {
+        foreach (['paths', 'webhooks'] as $field) {
+            foreach (Document::entries($document[$field] ?? null) as $key => $pathItem) {
+                $pathItem = Document::resolve($document, $pathItem);
+
+                if (!Document::isExtension($key) && is_array($pathItem) && Document::operationsOf($pathItem, JsonPointer::root())->valid()) {
+                    return;
+                }
+            }
+        }
+
+        $violations->add(new Violation(JsonPointer::root(), self::class, 'the document declares no operation, in paths or webhooks', Severity::Warning));
+    }
 }

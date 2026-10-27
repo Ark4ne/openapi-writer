@@ -1,0 +1,75 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/users": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "links": {
+                            "broken": {
+                                "operationRef": "#/paths/~1missing/get"
+                            }
+                        }
+                    }
+                },
+                "x-meta": {
+                    "$ref": "#/nowhere"
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Tree": {
+                "$id": "https://example.com/tree",
+                "$defs": {
+                    "node": {
+                        "type": "object"
+                    }
+                },
+                "properties": {
+                    "child": {
+                        "$ref": "#/$defs/node"
+                    },
+                    "missing": {
+                        "$ref": "#/$defs/leaf"
+                    }
+                }
+            },
+            "Pet": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/Tree"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                        "tree": "#/components/schemas/Tree",
+                        "cat": "#/components/schemas/Cat",
+                        "dog": "Dog"
+                    }
+                }
+            },
+            "Sample": {
+                "type": "object",
+                "default": {
+                    "$ref": "#/nowhere"
+                },
+                "properties": {
+                    "default": {
+                        "$ref": "#/components/schemas/Nope"
+                    }
+                },
+                "example": {
+                    "$ref": "#/nowhere"
+                }
+            }
+        }
+    }
+}

@@ -296,6 +296,20 @@ interface Rule
 }
 ```
 
+- `Validator::validate()` écrit le document en mode permissif. S'il a fallu retirer une fonctionnalité (violation
+  `Serializer::class`), ni le schéma officiel ni les règles ne s'exécutent : le document écrit n'est plus celui décrit,
+  et on signalerait les conséquences du retrait (document vide, référence orpheline).
+- Une règle peut recevoir un document que le schéma officiel rejette : chaque accès vérifie la forme du nœud.
+- Le parcours est partagé par `Rules\Document` (interne) : path items et opérations écrits sur place, dans l'ordre du
+  document (`paths`, `webhooks`, puis `components`), chaque opération suivie de celles de ses callbacks ; un path item
+  `$ref` n'est pas suivi par ce parcours. `Document::resolve()` suit les `$ref` locaux (paramètres, path items,
+  schémas de sécurité). Une violation est signalée à l'endroit où l'on corrige, la référence plutôt que sa cible.
+- `Rules\Values` repère les valeurs libres (`example`, `default`, `const`, `enum`, `value`, `dataValue`, extensions,
+  liste `examples` d'un schéma) : un `$ref` ou un `schema` qui s'y trouve est une donnée. Dans une map de noms
+  (`properties`, sections de `components`…), ces clés sont des noms et sont parcourues.
+- `OpisJsonSchemaValidator` charge les schémas à la première validation, une fois par instance (pas d'état
+  statique) : on réutilise une instance pour valider plusieurs documents.
+
 ## 5. Les erreurs
 
 - Toutes les exceptions implémentent l'interface `OpenApiWriterException` et étendent l'exception SPL qui

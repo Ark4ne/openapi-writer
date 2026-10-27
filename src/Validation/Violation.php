@@ -22,8 +22,13 @@ final readonly class Violation implements Stringable
         public Severity $severity = Severity::Error,
     ) {}
 
+    /**
+     * `[error] /paths/~1pets/get/operationId: operationId "list" is already used (UniqueOperationIdRule)`.
+     */
     public function __toString(): string
     {
-        return '';
+        $rule = strrchr($this->rule, '\\');
+
+        return sprintf('[%s] %s: %s (%s)', $this->severity->value, $this->pointer->toString(), $this->message, $rule === false ? $this->rule : substr($rule, 1));
     }
 }

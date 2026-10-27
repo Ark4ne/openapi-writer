@@ -30,4 +30,18 @@ final class ValueTypeRuleTest extends RuleTestCase
             ['/components/schemas/Ratio/example', Severity::Warning],
         ], self::check('value-type-invalid', Version::V3_1_2));
     }
+
+    /**
+     * 3.0: `nullable` accepts null, `1.0` is an integer, and schemas of parameters and nested schemas are checked.
+     */
+    public function test_nested_schemas_and_nullable_in_3_0(): void
+    {
+        self::assertSame([
+            ['/paths/~1users/get/parameters/0/schema/default', Severity::Warning],
+            ['/components/schemas/Name/default', Severity::Warning],
+            ['/components/schemas/User/properties/age/example', Severity::Warning],
+            ['/components/schemas/List/items/example', Severity::Warning],
+            ['/components/schemas/Mixed/allOf/0/default', Severity::Warning],
+        ], self::check('value-type-nested', Version::V3_0_4));
+    }
 }
