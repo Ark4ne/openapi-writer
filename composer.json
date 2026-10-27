@@ -1,0 +1,74 @@
+{
+    "name": "ark4ne/openapi-writer",
+    "description": "Framework-agnostic, fluent and immutable PHP builder for OpenAPI 3.0, 3.1 and 3.2 documents.",
+    "keywords": [
+        "openapi",
+        "oas",
+        "swagger",
+        "json-schema",
+        "builder",
+        "writer"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.75",
+        "phpat/phpat": "^0.12.5",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^11.5 || ^12.0 || ^13.0"
+    },
+    "suggest": {
+        "symfony/yaml": "Required to write documents as YAML (toYaml())."
+    },
+    "autoload": {
+        "psr-4": {
+            "Ark4ne\\OpenApiWriter\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ark4ne\\OpenApiWriter\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test:coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "phpunit --coverage-clover=build/coverage/clover.xml",
+            "php bin/coverage-check.php build/coverage/clover.xml 95"
+        ],
+        "stan": "phpstan analyse --memory-limit=1G",
+        "cs": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix",
+        "mutation": "infection --threads=max --show-mutations",
+        "ci": [
+            "@composer validate --strict",
+            "php bin/progress.php --check",
+            "@cs",
+            "@stan",
+            "@test"
+        ],
+        "progress": "php bin/progress.php"
+    },
+    "scripts-descriptions": {
+        "test": "Run the whole PHPUnit test suite.",
+        "test:coverage": "Run the tests with line coverage and fail under 95%.",
+        "stan": "Run PHPStan at max level on src/, tests/ and bin/, with the phpat architecture rules.",
+        "cs": "Check the code style (PER-CS).",
+        "cs:fix": "Fix the code style (PER-CS).",
+        "mutation": "Run mutation testing (requires infection to be installed globally).",
+        "ci": "Run every blocking check of the CI locally.",
+        "progress": "Rebuild the progress table of docs/README.md from the milestone checklists."
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

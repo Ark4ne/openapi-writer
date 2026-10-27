@@ -1,0 +1,24 @@
+includes:
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-phpunit/rules.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpat/phpat/extension.neon
+
+parameters:
+    level: max
+    paths:
+        - src
+        - tests
+        - bin
+    tmpDir: build/phpstan
+    ignoreErrors:
+        # M1/M2: the bodies are still neutral, so the documented @throws are not thrown yet. Removed in M3.
+        -
+            identifier: throws.unusedType
+            path: src/*
+
+services:
+    -
+        class: Ark4ne\OpenApiWriter\Tests\Architecture\ArchitectureTest
+        tags:
+            - phpat.test

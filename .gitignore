@@ -1,0 +1,6 @@
+/vendor/
+/build/
+/composer.lock
+/.idea/
+/.vscode/
+.DS_Store
