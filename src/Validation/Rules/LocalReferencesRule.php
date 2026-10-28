@@ -20,7 +20,7 @@ final class LocalReferencesRule implements Rule
 {
     public function check(array $document, Version $version, Violations $violations): void
     {
-        self::walk($document, $document, $document, JsonPointer::root(), Scope::root(), $violations);
+        self::walk($document, $document, $document, JsonPointer::root(), Scope::root($version), $violations);
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Validation\Rules;
 
+use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Support\JsonPointer;
 use Generator;
 
@@ -21,14 +22,8 @@ final class Document
     private const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace', 'query'];
 
     /**
-     * Root fields whose entries are path items: `x-webhooks` holds the webhooks written before 3.1 with
-     * `VendorExtensions::Redoc`.
-     */
-    public const PATH_ITEM_FIELDS = ['paths', 'webhooks', 'x-webhooks'];
-
-    /**
-     * Every path item written in place, in document order: `paths`, `webhooks`, `x-webhooks` (the Redoc extension that
-     * holds webhooks before 3.1, `VendorExtensions::Redoc`), then the path items and callbacks of
+     * Every path item written in place, in document order: `paths`, `webhooks` (or `x-webhooks` before 3.1), then the
+     * path items and callbacks of
      * `components`, each followed by the path items of the callbacks of its operations. The target of a path item
      * `$ref` is not followed, but the fields written next to the `$ref` are listed.
      *
@@ -36,9 +31,9 @@ final class Document
      *
      * @return Generator<int, array{JsonPointer, array<mixed>}>
      */
-    public static function pathItems(array $document): Generator
+    public static function pathItems(array $document, Version $version): Generator
     {
-        foreach (self::roots($document) as [$pointer, $pathItem]) {
+        foreach (self::roots($document, $version) as [$pointer, $pathItem]) {
             yield from self::withCallbacks($pathItem, $pointer);
         }
     }
@@ -50,9 +45,9 @@ final class Document
      *
      * @return Generator<int, array{JsonPointer, array<mixed>}>
      */
-    public static function operations(array $document): Generator
+    public static function operations(array $document, Version $version): Generator
     {
-        foreach (self::roots($document) as [$pointer, $pathItem]) {
+        foreach (self::roots($document, $version) as [$pointer, $pathItem]) {
             yield from self::operationsWithCallbacks($pathItem, $pointer);
         }
     }
@@ -162,23 +157,34 @@ final class Document
         return is_array($node) ? $node : [];
     }
 
+    /**
+     * Root fields whose entries are path items. Before 3.1, `x-webhooks` holds the webhooks (Redoc extension, written
+     * with `VendorExtensions::Redoc`); from 3.1, it is an extension like any other.
+     *
+     * @return list<string>
+     */
+    public static function pathItemFields(Version $version): array
+    {
+        return ['paths', $version->isAtLeast(Version::V3_1_0) ? 'webhooks' : 'x-webhooks'];
+    }
+
     public static function isExtension(int|string $key): bool
     {
         return str_starts_with((string) $key, 'x-');
     }
 
     /**
-     * Path items of `paths`, `webhooks`, `x-webhooks` and `components`, without those of callbacks of operations.
+     * Path items of `paths`, `webhooks` (or `x-webhooks`) and `components`, without those of callbacks of operations.
      *
      * @param array<string, mixed> $document
      *
      * @return Generator<int, array{JsonPointer, array<mixed>}>
      */
-    private static function roots(array $document): Generator
+    private static function roots(array $document, Version $version): Generator
     {
         $root = JsonPointer::root();
 
-        foreach (self::PATH_ITEM_FIELDS as $field) {
+        foreach (self::pathItemFields($version) as $field) {
             foreach (self::entries($document[$field] ?? null) as $key => $pathItem) {
                 if (!self::isExtension($key) && is_array($pathItem)) {
                     yield [$root->append($field, $key), $pathItem];

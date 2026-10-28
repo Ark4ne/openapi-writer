@@ -349,8 +349,8 @@ requirement all apply together; several requirements in `security()` are alterna
   when a schema validator is given (`new OpisJsonSchemaValidator()`, needs `opis/json-schema`; reuse the instance).
 - `->validate(OpenApi $openApi, Version|string|null $version = null, VendorExtensions|string $extensions =
   VendorExtensions::None): Violations`; the version defaults to the declared one, else 3.1.2. Pass the vendor
-  extensions the document is written with. What the version cannot express is reported, not thrown. The rules read
-  the operations of `x-webhooks` like those of `webhooks`.
+  extensions the document is written with. What the version cannot express is reported, not thrown. Before 3.1, the
+  rules read `x-webhooks` like `webhooks`.
 - `->withRules(Rule ...$rules)` adds rules, `->withoutRules(string ...$ruleClasses)` removes them, `->rules()` lists
   them; both return a new validator.
 - `Violations`: iterable and countable; `all()`, `errors()`, `warnings()`, `isValid(): bool` (no error; warnings

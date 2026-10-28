@@ -17,7 +17,7 @@ final class SecurityRequirementsRule implements Rule
 {
     public function check(array $document, Version $version, Violations $violations): void
     {
-        foreach (Document::operations($document) as [$pointer, $operation]) {
+        foreach (Document::operations($document, $version) as [$pointer, $operation]) {
             self::checkRequirements($document, $version, $operation['security'] ?? null, $pointer->append('security'), $violations);
         }
 

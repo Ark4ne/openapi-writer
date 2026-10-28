@@ -17,6 +17,15 @@ final class LocalReferencesRuleTest extends RuleTestCase
         return new LocalReferencesRule();
     }
 
+    /**
+     * Before 3.1, `x-webhooks` holds the webhooks written with `VendorExtensions::Redoc`; from 3.1 it is a free value.
+     */
+    public function test_references_of_the_redoc_x_webhooks_are_checked_before_3_1_only(): void
+    {
+        self::assertSame([['/x-webhooks/userCreated/post/requestBody/content/application~1json/schema', Severity::Error]], self::check('x-webhooks-reference', Version::V3_0_4));
+        self::assertSame([], self::check('x-webhooks-reference', Version::V3_1_2));
+    }
+
     public function test_local_references_and_operation_refs_that_resolve_are_valid(): void
     {
         self::assertSame([], self::check('local-references-valid', Version::V3_1_2));

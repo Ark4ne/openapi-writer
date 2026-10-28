@@ -20,7 +20,7 @@ final class ValueTypeRule implements Rule
 {
     public function check(array $document, Version $version, Violations $violations): void
     {
-        self::walk($document, JsonPointer::root(), Scope::root(), $version, $violations);
+        self::walk($document, JsonPointer::root(), Scope::root($version), $version, $violations);
     }
 
     /**

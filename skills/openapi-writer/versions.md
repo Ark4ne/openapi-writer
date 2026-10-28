@@ -60,7 +60,7 @@ default: the output then follows the specification.
 | `Tag::parent()` | 3.2.0 | `parent` removed from the tags; `x-tagGroups` at the root: `[{name, tags: [...]}]` |
 
 - Each conversion is a `Converted` diagnostic (`/webhooks`, `/tags/1/parent`), in both modes. The content of the
-  webhooks is written for the version as usual, and its diagnostics keep their `/webhooks/…` pointer.
+  webhooks is written for the version as usual, and its diagnostics point into `/x-webhooks/…`.
 - Groups follow the order of the tags. Redoc groups on one level: a tag goes into the group of its topmost ancestor,
   named after that ancestor (`cats` → `pets` → `animals`: group `animals`). A tag without parent forms its own group,
   holding itself, because Redoc hides the tags of no group; a parent missing from `tags` still names its group. A

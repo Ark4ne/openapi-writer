@@ -54,8 +54,8 @@ final class ReadmeTest extends TestCase
         self::assertSame(['[unsupported] /webhooks: webhooks needs 3.1.0'], $variables['reasons'] ?? null);
         self::assertSame(
             [
-                '[converted] /components/schemas/Pet/properties/birthday: nullable written as nullable: true',
                 '[dropped] /webhooks: webhooks needs 3.1.0',
+                '[converted] /components/schemas/Pet/properties/birthday: nullable written as nullable: true',
             ],
             $variables['diagnostics'] ?? null,
         );

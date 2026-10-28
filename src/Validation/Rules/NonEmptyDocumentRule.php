@@ -12,8 +12,8 @@ use Ark4ne\OpenApiWriter\Validation\Violation;
 use Ark4ne\OpenApiWriter\Validation\Violations;
 
 /**
- * The document declares at least one operation, in `paths`, `webhooks` or `x-webhooks` (`additionalOperations`
- * included). The official schema accepts a document without any (empty `paths`, path items without methods,
+ * The document declares at least one operation, in `paths`, `webhooks` or, before 3.1, `x-webhooks`
+ * (`additionalOperations` included). The official schema accepts a document without any (empty `paths`, path items without methods,
  * components only), but it describes no API: warning at the root. Path items of `components` are only reusable, so they do not count; a path
  * item of another document (external `$ref`) is not read and counts.
  */
@@ -21,7 +21,7 @@ final class NonEmptyDocumentRule implements Rule
 {
     public function check(array $document, Version $version, Violations $violations): void
     {
-        foreach (Document::PATH_ITEM_FIELDS as $field) {
+        foreach (Document::pathItemFields($version) as $field) {
             foreach (Document::entries($document[$field] ?? null) as $key => $pathItem) {
                 if (Document::isExtension($key) || !is_array($pathItem)) {
                     continue;

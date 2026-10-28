@@ -18,7 +18,7 @@ final class UniqueOperationIdRule implements Rule
     {
         $seen = [];
 
-        foreach (Document::operations($document) as [$pointer, $operation]) {
+        foreach (Document::operations($document, $version) as [$pointer, $operation]) {
             $operationId = $operation['operationId'] ?? null;
 
             if (!is_string($operationId)) {

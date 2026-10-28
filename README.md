@@ -298,8 +298,8 @@ try {
 }
 
 // Lenient mode drops what the version cannot express. The diagnostics list each removal and each conversion:
-// ['[converted] /components/schemas/Pet/properties/birthday: nullable written as nullable: true',
-//  '[dropped] /webhooks: webhooks needs 3.1.0']
+// ['[dropped] /webhooks: webhooks needs 3.1.0',
+//  '[converted] /components/schemas/Pet/properties/birthday: nullable written as nullable: true']
 $result = Serializer::for(Version::V3_0_4, Strictness::Lenient)->serialize($withWebhook);
 $json30 = $result->toJson();
 $diagnostics = array_map('strval', $result->diagnostics()->all());

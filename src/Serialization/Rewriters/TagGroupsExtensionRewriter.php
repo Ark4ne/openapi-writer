@@ -18,23 +18,21 @@ use Ark4ne\OpenApiWriter\Serialization\Context;
  * tags of no group). A parent missing from `tags` still names its group; a tag whose parents loop forms its own group.
  * An `x-tagGroups` defined by the document wins: the parents then stay unsupported.
  */
-final class TagGroupsExtensionRewriter implements Rewriter
+final class TagGroupsExtensionRewriter implements UnavailableFieldRewriter
 {
     public function supports(SpecObject $object): bool
     {
         return ($object instanceof Tag && $object->has('parent')) || ($object instanceof OpenApi && $object->has('tags'));
     }
 
+    public function convertsTo(SpecObject $object, string $field, Context $context): ?string
+    {
+        return $object instanceof Tag && $field === 'parent' && self::converts($context) ? 'parent' : null;
+    }
+
     public function rewrite(SpecObject $object, array $node, Context $context): array
     {
-        $document = $context->document;
-
-        if (
-            $context->extensions !== VendorExtensions::Redoc
-            || $context->version->isAtLeast(Version::V3_2_0)
-            || !$document instanceof OpenApi
-            || array_key_exists('x-tagGroups', $document->extensions)
-        ) {
+        if (!self::converts($context)) {
             return $node;
         }
 
@@ -43,8 +41,8 @@ final class TagGroupsExtensionRewriter implements Rewriter
             $context->at('parent')->converted('parent written in x-tagGroups');
         }
 
-        if ($object === $document) {
-            $groups = self::groups($document->tags ?? []);
+        if ($object instanceof OpenApi && $object === $context->document) {
+            $groups = self::groups($object->tags ?? []);
 
             if ($groups !== []) {
                 $node['x-tagGroups'] = $groups;
@@ -52,6 +50,18 @@ final class TagGroupsExtensionRewriter implements Rewriter
         }
 
         return $node;
+    }
+
+    /**
+     * Redoc extensions requested, a version without `Tag.parent`, and an OpenApi document without its own `x-tagGroups`
+     * to hold the groups.
+     */
+    private static function converts(Context $context): bool
+    {
+        return $context->extensions === VendorExtensions::Redoc
+            && !$context->version->isAtLeast(Version::V3_2_0)
+            && $context->document instanceof OpenApi
+            && !array_key_exists('x-tagGroups', $context->document->extensions);
     }
 
     /**

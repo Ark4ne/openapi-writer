@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Validation\Rules;
 
+use Ark4ne\OpenApiWriter\Enums\Version;
+
 /**
  * Where a walk stands in a written document: an object of the spec, whose keys are fields, or a map, whose keys are
  * names chosen by the author. It tells which values are free (`example`, `default`, extensions…), where a `$ref` or a
@@ -32,17 +34,19 @@ final readonly class Scope
      * @param string|null $field      the field that holds this node; null for the root and for an entry of a map
      * @param bool        $extensible for a map: its `x-` keys are extensions (Paths, Responses, Callback)
      * @param bool        $link       for an object: it is a Link, whose `requestBody` is free
+     * @param bool        $xWebhooks  for the root before 3.1: its `x-webhooks` holds webhooks (Redoc extension)
      */
     private function __construct(
         public ?string $field,
         private bool $map,
         private bool $extensible,
         private bool $link,
+        private bool $xWebhooks = false,
     ) {}
 
-    public static function root(): self
+    public static function root(Version $version): self
     {
-        return new self(null, false, false, false);
+        return new self(null, false, false, false, !$version->isAtLeast(Version::V3_1_0));
     }
 
     public function isMap(): bool
@@ -64,6 +68,10 @@ final readonly class Scope
             return $this->field === 'callbacks'
                 ? new self(null, true, true, false)
                 : new self(null, false, false, $this->field === 'links');
+        }
+
+        if ($this->xWebhooks && $key === 'x-webhooks') {
+            return new self('webhooks', true, false, false);
         }
 
         if (in_array($key, self::FREE, true) || Document::isExtension($key)

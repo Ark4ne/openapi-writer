@@ -25,7 +25,7 @@ final class DeclaredTagsRule implements Rule
             }
         }
 
-        foreach (Document::operations($document) as [$pointer, $operation]) {
+        foreach (Document::operations($document, $version) as [$pointer, $operation]) {
             foreach (Document::entries($operation['tags'] ?? null) as $index => $tag) {
                 if (is_string($tag) && !isset($declared[$tag])) {
                     $violations->add(new Violation(

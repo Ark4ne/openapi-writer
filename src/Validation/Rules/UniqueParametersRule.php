@@ -17,7 +17,7 @@ final class UniqueParametersRule implements Rule
 {
     public function check(array $document, Version $version, Violations $violations): void
     {
-        foreach (Document::pathItems($document) as [$pointer, $pathItem]) {
+        foreach (Document::pathItems($document, $version) as [$pointer, $pathItem]) {
             foreach (Document::operationsOf($pathItem, $pointer) as [$operationPointer, $operation]) {
                 self::checkList($document, $operation, $operationPointer, $violations);
             }

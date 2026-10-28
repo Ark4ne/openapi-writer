@@ -1,0 +1,28 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "x-webhooks": {
+        "userCreated": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Missing"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    }
+}

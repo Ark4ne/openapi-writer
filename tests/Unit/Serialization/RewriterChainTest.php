@@ -38,10 +38,10 @@ final class RewriterChainTest extends TestCase
             Rewriters\NullableWithoutTypeRewriter::class,
             Rewriters\ResponseDescriptionRewriter::class,
             Rewriters\EmptyPathsRewriter::class,
-            Rewriters\NonOAuthScopesRewriter::class,
-            Rewriters\MediaTypeReferenceRewriter::class,
             Rewriters\WebhooksExtensionRewriter::class,
             Rewriters\TagGroupsExtensionRewriter::class,
+            Rewriters\NonOAuthScopesRewriter::class,
+            Rewriters\MediaTypeReferenceRewriter::class,
             Rewriters\ReservedExtensionRewriter::class,
         ], $classes);
     }
@@ -51,7 +51,7 @@ final class RewriterChainTest extends TestCase
         $files = glob(__DIR__ . '/../../../src/Serialization/Rewriters/*Rewriter.php');
         self::assertIsArray($files);
         $declared = array_map(static fn(string $file): string => 'Ark4ne\\OpenApiWriter\\Serialization\\Rewriters\\' . basename($file, '.php'), $files);
-        $declared = array_values(array_diff($declared, [Rewriter::class]));
+        $declared = array_values(array_diff($declared, [Rewriter::class, Rewriters\UnavailableFieldRewriter::class]));
 
         $chained = array_map(static fn(Rewriter $rewriter): string => $rewriter::class, RewriterChain::default()->rewriters);
         sort($declared);

@@ -26,7 +26,7 @@ final readonly class RewriterChain
      * The library's chain. The order matters where rewriters combine (`nullable` + `$ref` + several types):
      * NullableWithoutTypeRewriter comes after the other Schema rewriters, so that the branch it builds holds keywords
      * already written for the version. The vendor extension rewriters move fields unknown to the version, which the
-     * Normalizer would otherwise drop; the Tag nodes are rewritten before the OpenApi node that writes `x-tagGroups`.
+     * Normalizer would otherwise drop, before NonOAuthScopesRewriter reads the operations of `x-webhooks`.
      */
     public static function default(): self
     {
@@ -45,12 +45,31 @@ final readonly class RewriterChain
             new NullableWithoutTypeRewriter(),
             new ResponseDescriptionRewriter(),
             new EmptyPathsRewriter(),
-            new NonOAuthScopesRewriter(),
-            new MediaTypeReferenceRewriter(),
             new WebhooksExtensionRewriter(),
             new TagGroupsExtensionRewriter(),
+            new NonOAuthScopesRewriter(),
+            new MediaTypeReferenceRewriter(),
             new ReservedExtensionRewriter(),
         );
+    }
+
+    /**
+     * Where a rewriter of the chain writes the content of the unavailable $field of $object, or null when none
+     * converts it (UnavailableFieldRewriter).
+     */
+    public function convertsTo(SpecObject $object, string $field, Context $context): ?string
+    {
+        foreach ($this->rewriters as $rewriter) {
+            if ($rewriter instanceof UnavailableFieldRewriter && $rewriter->supports($object)) {
+                $target = $rewriter->convertsTo($object, $field, $context);
+
+                if ($target !== null) {
+                    return $target;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -14,8 +14,8 @@ use Ark4ne\OpenApiWriter\Serialization\Context;
  * are emptied so that the requirement stays.
  *
  * Supports the OpenApi object only: its node is the whole written document, where `components.securitySchemes`
- * gives the type of each scheme named by the `security` requirements of the document, of its operations, of the
- * operations of their callbacks and of the callbacks of the components. A scheme written as a Reference has no known type and is left as is.
+ * gives the type of each scheme named by the `security` requirements of the document, of its operations (`x-webhooks`
+ * included), of the operations of their callbacks and of the callbacks of the components. A scheme written as a Reference has no known type and is left as is.
  */
 final class NonOAuthScopesRewriter implements Rewriter
 {
@@ -51,6 +51,11 @@ final class NonOAuthScopesRewriter implements Rewriter
 
         if (is_array($node['paths'] ?? null)) {
             $node['paths'] = self::pathItems($node['paths'], $unscoped, $context->at('paths'));
+        }
+
+        // Webhooks written by WebhooksExtensionRewriter, not an `x-webhooks` defined by the document (a free value).
+        if ($object instanceof OpenApi && $object->has('webhooks') && !array_key_exists('x-webhooks', $object->extensions) && is_array($node['x-webhooks'] ?? null)) {
+            $node['x-webhooks'] = self::pathItems($node['x-webhooks'], $unscoped, $context->at('x-webhooks'));
         }
 
         if (is_array($components['callbacks'] ?? null)) {

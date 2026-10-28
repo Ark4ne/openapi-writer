@@ -7,6 +7,7 @@ namespace Ark4ne\OpenApiWriter\Tests\Compatibility;
 use Ark4ne\OpenApiWriter\Enums\Strictness;
 use Ark4ne\OpenApiWriter\Enums\VendorExtensions;
 use Ark4ne\OpenApiWriter\Enums\Version;
+use Ark4ne\OpenApiWriter\Objects\Components;
 use Ark4ne\OpenApiWriter\Objects\MediaType;
 use Ark4ne\OpenApiWriter\Objects\OpenApi;
 use Ark4ne\OpenApiWriter\Objects\Operation;
@@ -14,6 +15,8 @@ use Ark4ne\OpenApiWriter\Objects\PathItem;
 use Ark4ne\OpenApiWriter\Objects\RequestBody;
 use Ark4ne\OpenApiWriter\Objects\Response;
 use Ark4ne\OpenApiWriter\Objects\Schema;
+use Ark4ne\OpenApiWriter\Objects\SecurityRequirement;
+use Ark4ne\OpenApiWriter\Objects\SecurityScheme;
 use Ark4ne\OpenApiWriter\Objects\Tag;
 use Ark4ne\OpenApiWriter\Serialization\DiagnosticLevel;
 use Ark4ne\OpenApiWriter\Serialization\Serializer;
@@ -41,7 +44,7 @@ final class VendorExtensionsTest extends TestCase
         return [
             'webhooks' => [
                 static fn(): OpenApi => self::webhooks(),
-                ['3.0' => ['/webhooks', '/webhooks/userCreated/post/requestBody/content/application~1json/schema'], '3.1' => [], '3.2' => []],
+                ['3.0' => ['/webhooks', '/x-webhooks/userCreated/post/requestBody/content/application~1json/schema'], '3.1' => [], '3.2' => []],
             ],
             'tag-groups' => [
                 static fn(): OpenApi => self::tagGroups(),
@@ -97,8 +100,8 @@ final class VendorExtensionsTest extends TestCase
     {
         $document = self::userDefined();
         $unsupported = array_values(array_filter([
-            CompleteObjects::atLeast($version, Version::V3_2_0) ? null : '/tags/1/parent',
             CompleteObjects::atLeast($version, Version::V3_1_0) ? null : '/webhooks',
+            CompleteObjects::atLeast($version, Version::V3_2_0) ? null : '/tags/1/parent',
         ]));
 
         if ($unsupported !== []) {
@@ -122,7 +125,36 @@ final class VendorExtensionsTest extends TestCase
     {
         $document = Documents::compatibility()->webhooks(PathItem::create('search')->query(Operation::query()->responses(Response::ok())));
 
-        self::assertUnsupported(['/webhooks/search/query'], static fn(): string => $document->toJson(Version::V3_0_4, extensions: 'redoc'));
+        self::assertUnsupported(['/x-webhooks/search/query'], static fn(): string => $document->toJson(Version::V3_0_4, extensions: 'redoc'));
+    }
+
+    public function test_scopes_of_a_non_oauth_scheme_are_emptied_in_x_webhooks_as_in_paths(): void
+    {
+        $document = Documents::compatibility()
+            ->components(Components::create()->securitySchemes(SecurityScheme::apiKey('key')->name('X-Key')->in('header')))
+            ->webhooks(PathItem::create('userCreated')->post(
+                Operation::post()->security(SecurityRequirement::create()->schemes(['key' => ['read']]))->responses(Response::ok()),
+            ));
+
+        $result = Serializer::for(Version::V3_0_4, Strictness::Lenient, VendorExtensions::Redoc)->serialize($document);
+
+        self::assertStringContainsString('"x-webhooks":{"userCreated":{"post":{"responses":{"200":{"description":"OK"}},"security":[{"key":[]}]', $result->toJson());
+        self::assertDiagnostics(
+            [[DiagnosticLevel::Converted, '/webhooks'], [DiagnosticLevel::Dropped, '/x-webhooks/userCreated/post/security/0/key']],
+            $result->diagnostics(),
+        );
+    }
+
+    public function test_an_x_webhooks_defined_by_the_document_is_left_as_written(): void
+    {
+        $document = Documents::compatibility()
+            ->components(Components::create()->securitySchemes(SecurityScheme::apiKey('key')->name('X-Key')->in('header')))
+            ->x('x-webhooks', ['legacy' => ['post' => ['security' => [['key' => ['read']]]]]]);
+
+        $result = Serializer::for(Version::V3_0_4, Strictness::Strict, VendorExtensions::Redoc)->serialize($document);
+
+        self::assertStringContainsString('"x-webhooks":{"legacy":{"post":{"security":[{"key":["read"]}]', $result->toJson());
+        self::assertTrue($result->diagnostics()->isEmpty());
     }
 
     public function test_a_tag_written_alone_keeps_its_parent_unsupported(): void
