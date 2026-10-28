@@ -142,6 +142,7 @@ $errors = array_map('strval', $violations->errors());       // [] when the docum
 | `$object->toYaml(?Version $version = null)` | YAML string, needs `symfony/yaml` |
 | `$object->toArray(?Version $version = null)` | PHP array; empty objects are `\stdClass` so they stay `{}` |
 | `Serializer::for($version, Strictness::Lenient)->serialize($object)` | `SerializationResult`: `toJson()`, `toYaml()`, `toArray()`, `diagnostics()` |
+| `toJson($version, extensions: VendorExtensions::Redoc)` | Webhooks and tag parents as Redoc's `x-webhooks` / `x-tagGroups` where the version lacks them ([versions.md](versions.md)) |
 
 The version is a `Version` case or its string (`'3.0.4'`). Without one, the version given to `OpenApi::openapi()` is
 used, else 3.1.2. Any object can be written, not only `OpenApi` (useful to inspect a schema).

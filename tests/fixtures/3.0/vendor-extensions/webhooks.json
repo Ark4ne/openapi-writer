@@ -1,0 +1,34 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "x-webhooks": {
+        "userCreated": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nickname": {
+                                        "type": "string"
+                                    }
+                                },
+                                "nullable": true
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    }
+}

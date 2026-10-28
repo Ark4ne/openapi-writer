@@ -33,6 +33,11 @@ final class UniqueOperationIdRuleTest extends RuleTestCase
     /**
      * Operations of callbacks, additional operations and components count; extensions of `paths` do not.
      */
+    public function test_operations_of_the_redoc_x_webhooks_count(): void
+    {
+        self::assertSame([['/x-webhooks/userDeleted/post/operationId', Severity::Error]], self::check('x-webhooks', Version::V3_0_4));
+    }
+
     public function test_operations_of_callbacks_additional_operations_and_components_count(): void
     {
         self::assertSame([

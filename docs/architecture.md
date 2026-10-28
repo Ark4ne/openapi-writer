@@ -197,11 +197,13 @@ OpenApi ──► Normalizer (parcours) ──► Rewriters (une différence de 
 Pour chaque objet, le `Normalizer` :
 
 1. lit ses `ClassMetadata` ;
-2. pour chaque champ défini et émis : vérifie `since` / `until` contre la version cible. Si le champ est indisponible,
-   il signale `Unsupported` et l'ignore ; sinon il le normalise (récursion sur les objets, listes, maps) ;
+2. pour chaque champ défini et émis : le normalise (récursion sur les objets, listes, maps). Un champ indisponible
+   dans la version cible (`since` / `until`) est normalisé avec ses propres diagnostics (`Context::detached()`), pour
+   qu'un rewriter puisse le convertir en déplaçant ou retirant sa clé ;
 3. écrit un objet ou une map vide en `\stdClass` (donc `{}` en JSON, jamais `[]`), y compris dans `toArray()` ;
    les rewriters respectent la même convention ;
-4. passe le nœud obtenu à la `RewriterChain` ;
+4. passe le nœud obtenu à la `RewriterChain`, puis retire chaque champ indisponible encore présent et le signale
+   `Unsupported`, sans les diagnostics de son contenu ; ceux d'un champ converti sont conservés ;
 5. remet les clés du nœud réécrit dans l'ordre des champs (tri stable, rang précalculé par `ClassMetadata::rank()`) :
    les entrées d'un champ « patterned » à la place de ce champ, les clés inconnues ensuite, les extensions en
    dernier. Un rewriter n'a donc pas à placer les clés qu'il ajoute (`anyOf` à la place d'un `$ref`…).
@@ -242,6 +244,10 @@ interface Rewriter
   dans `openapi` ; `NonOAuthScopesRewriter` (scopes hors OAuth2, rejet en 3.0) travaille sur le nœud `OpenApi`,
   qui contient tout le document ; `ReservedExtensionRewriter` refuse les préfixes `x-oai-` / `x-oas-` à partir de
   3.1 ; `MediaTypeReferenceRewriter` refuse un `Reference` dans un `content` avant 3.2.
+- Deux rewriters écrivent des extensions de fournisseur, seulement avec l'option `VendorExtensions::Redoc` du
+  `Context` : `WebhooksExtensionRewriter` (`webhooks` → `x-webhooks` avant 3.1) et `TagGroupsExtensionRewriter`
+  (`Tag.parent` → `x-tagGroups` avant 3.2, sur les nœuds `Tag` puis `OpenApi`). Ce dernier lit le document entier
+  dans `Context::$document`, l'objet sérialisé à la racine.
 - Il n'y a donc pas de classe `V30Adapter` : « supporter 3.0 », c'est l'ensemble des `since` / `until` et des
   rewriters.
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Objects;
 
+use Ark4ne\OpenApiWriter\Enums\VendorExtensions;
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Exceptions\DuplicateObjectIdException;
 use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
@@ -97,16 +98,17 @@ abstract class SpecObject
 
     /**
      * Writes the object for the given version (default: the `openapi` field of an OpenApi, else 3.1.2), in strict
-     * mode. Use `Serializer::for()` to get the diagnostics or to serialize in lenient mode.
+     * mode, with the given vendor extensions (default: none). Use `Serializer::for()` to get the diagnostics or to
+     * serialize in lenient mode.
      * Empty objects and maps are written as `\stdClass`, so that JSON writes `{}` and never `[]`.
      *
      * @return array<string, mixed>
      *
      * @throws UnsupportedFeatureException
      */
-    public function toArray(Version|string|null $version = null): array
+    public function toArray(Version|string|null $version = null, VendorExtensions|string $extensions = VendorExtensions::None): array
     {
-        return Serializer::for($version ?? $this->declaredVersion())->serialize($this)->toArray();
+        return Serializer::for($version ?? $this->declaredVersion(), extensions: $extensions)->serialize($this)->toArray();
     }
 
     /**
@@ -117,18 +119,18 @@ abstract class SpecObject
      *
      * @throws UnsupportedFeatureException
      */
-    public function toJson(Version|string|null $version = null, int $flags = 0): string
+    public function toJson(Version|string|null $version = null, int $flags = 0, VendorExtensions|string $extensions = VendorExtensions::None): string
     {
-        return Serializer::for($version ?? $this->declaredVersion())->serialize($this)->toJson($flags);
+        return Serializer::for($version ?? $this->declaredVersion(), extensions: $extensions)->serialize($this)->toJson($flags);
     }
 
     /**
      * @throws UnsupportedFeatureException
      * @throws MissingDependencyException when `symfony/yaml` is not installed
      */
-    public function toYaml(Version|string|null $version = null): string
+    public function toYaml(Version|string|null $version = null, VendorExtensions|string $extensions = VendorExtensions::None): string
     {
-        return Serializer::for($version ?? $this->declaredVersion())->serialize($this)->toYaml();
+        return Serializer::for($version ?? $this->declaredVersion(), extensions: $extensions)->serialize($this)->toYaml();
     }
 
     /**

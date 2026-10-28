@@ -1,0 +1,36 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "tags": [
+        {
+            "name": "animals"
+        },
+        {
+            "name": "pets"
+        }
+    ],
+    "x-webhooks": {
+        "legacy": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "x-tagGroups": [
+        {
+            "name": "Everything",
+            "tags": [
+                "animals",
+                "pets"
+            ]
+        }
+    ]
+}

@@ -21,7 +21,7 @@ Conventions used below:
 | `without(string $field)` | Copy without the field (`'default'`, `'description'`…) |
 | `has(string $field): bool` | Whether the field is set |
 | `$object->field` | Read a field (`$schema->maxLength`): `null` when unset |
-| `toArray($version)`, `toJson($version, $flags)`, `toYaml($version)` | Write the object (SKILL.md, "Writing") |
+| `toArray($version, $extensions)`, `toJson($version, $flags, $extensions)`, `toYaml($version, $extensions)` | Write the object (SKILL.md, "Writing") |
 | `x(string $name, mixed $value)` | Extension `x-<name>` on extensible objects (all but `Reference` and `SecurityRequirement`); the prefix is added when missing |
 | `withoutX(string $name)` | Remove an extension |
 
@@ -39,7 +39,7 @@ Root object. `OpenApi::create()`.
 | `jsonSchemaDialect(?string $jsonSchemaDialect)` | **(3.1+)** |
 | `servers(Server ...)`, `addServers(Server ...)` | |
 | `paths(PathItem ...)`, `addPaths(PathItem ...)` | objectId = path (`/users/{id}`) |
-| `webhooks(PathItemContract ...)`, `addWebhooks(...)` | **(3.1+)** objectId = webhook name |
+| `webhooks(PathItemContract ...)`, `addWebhooks(...)` | **(3.1+)** objectId = webhook name; `x-webhooks` before 3.1 with `VendorExtensions::Redoc` |
 | `components(?Components $components)` | |
 | `security(SecurityRequirement ...)`, `addSecurity(...)` | Alternatives; see `SecurityRequirement` |
 | `tags(Tag ...)`, `addTags(Tag ...)` | List, no objectId needed |
@@ -74,7 +74,8 @@ Root object. `OpenApi::create()`.
 
 `Tag::create()->name('pets')`: `name(?string)` (required; `create('pets')` does **not** set it), `summary(?string)`
 **(3.2)**, `description(?string)`, `externalDocs(?ExternalDocumentation)`, `parent(?string)` **(3.2)** (name of the
-parent tag), `kind(?string)` **(3.2)** (`nav`, `badge`, `audience`…).
+parent tag; `x-tagGroups` before 3.2 with `VendorExtensions::Redoc`), `kind(?string)` **(3.2)** (`nav`, `badge`,
+`audience`…).
 
 ### ExternalDocumentation
 
@@ -321,6 +322,7 @@ requirement all apply together; several requirements in `security()` are alterna
 | --- | --- |
 | `Version` | `V3_0_0`, `V3_0_1`, `V3_0_2`, `V3_0_3`, `V3_0_4`, `V3_1_0`, `V3_1_1`, `V3_1_2`, `V3_2_0` |
 | `Strictness` | `Strict` (default), `Lenient` |
+| `VendorExtensions` | `None` (default), `Redoc` (`x-webhooks` before 3.1, `x-tagGroups` before 3.2; [versions.md](versions.md)) |
 | `SchemaType` | `String`, `Number`, `Integer`, `Boolean`, `Array`, `Object`, `Null` |
 | `ParameterLocation` | `Query`, `Header`, `Path`, `Cookie`, `Querystring` |
 | `ParameterStyle` | `Matrix`, `Label`, `Simple`, `Form`, `SpaceDelimited`, `PipeDelimited`, `DeepObject`, `Cookie` |
@@ -331,8 +333,9 @@ requirement all apply together; several requirements in `security()` are alterna
 
 ## Serialization (`Ark4ne\OpenApiWriter\Serialization`)
 
-- `Serializer::for(Version|string|null $version = null, Strictness|string $strictness = Strictness::Strict)`,
-  then `->serialize(SpecObject $object): SerializationResult`.
+- `Serializer::for(Version|string|null $version = null, Strictness|string $strictness = Strictness::Strict,
+  VendorExtensions|string $extensions = VendorExtensions::None)`, then `->serialize(SpecObject $object): SerializationResult`.
+  Enums or their values (`'3.0.4'`, `'lenient'`, `'redoc'`).
 - `SerializationResult`: `toArray(): array`, `toJson(int $flags = 0): string`, `toYaml(): string`,
   `diagnostics(): Diagnostics`.
 - `Diagnostics`: iterable and countable; `all(): list<Diagnostic>`, `ofLevel(DiagnosticLevel $level)`, `isEmpty()`.
@@ -344,8 +347,10 @@ requirement all apply together; several requirements in `security()` are alterna
 
 - `Validator::create(?JsonSchemaValidator $schemaValidator = null)`: the built-in rules, plus the official schema
   when a schema validator is given (`new OpisJsonSchemaValidator()`, needs `opis/json-schema`; reuse the instance).
-- `->validate(OpenApi $openApi, Version|string|null $version = null): Violations`; the version defaults to the
-  declared one, else 3.1.2. What the version cannot express is reported, not thrown.
+- `->validate(OpenApi $openApi, Version|string|null $version = null, VendorExtensions|string $extensions =
+  VendorExtensions::None): Violations`; the version defaults to the declared one, else 3.1.2. Pass the vendor
+  extensions the document is written with. What the version cannot express is reported, not thrown. The rules read
+  the operations of `x-webhooks` like those of `webhooks`.
 - `->withRules(Rule ...$rules)` adds rules, `->withoutRules(string ...$ruleClasses)` removes them, `->rules()` lists
   them; both return a new validator.
 - `Violations`: iterable and countable; `all()`, `errors()`, `warnings()`, `isValid(): bool` (no error; warnings

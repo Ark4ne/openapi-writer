@@ -21,7 +21,14 @@ final class Document
     private const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace', 'query'];
 
     /**
-     * Every path item written in place, in document order: `paths`, `webhooks`, then the path items and callbacks of
+     * Root fields whose entries are path items: `x-webhooks` holds the webhooks written before 3.1 with
+     * `VendorExtensions::Redoc`.
+     */
+    public const PATH_ITEM_FIELDS = ['paths', 'webhooks', 'x-webhooks'];
+
+    /**
+     * Every path item written in place, in document order: `paths`, `webhooks`, `x-webhooks` (the Redoc extension that
+     * holds webhooks before 3.1, `VendorExtensions::Redoc`), then the path items and callbacks of
      * `components`, each followed by the path items of the callbacks of its operations. The target of a path item
      * `$ref` is not followed, but the fields written next to the `$ref` are listed.
      *
@@ -161,7 +168,7 @@ final class Document
     }
 
     /**
-     * Path items of `paths`, `webhooks` and `components`, without those of callbacks of operations.
+     * Path items of `paths`, `webhooks`, `x-webhooks` and `components`, without those of callbacks of operations.
      *
      * @param array<string, mixed> $document
      *
@@ -171,7 +178,7 @@ final class Document
     {
         $root = JsonPointer::root();
 
-        foreach (['paths', 'webhooks'] as $field) {
+        foreach (self::PATH_ITEM_FIELDS as $field) {
             foreach (self::entries($document[$field] ?? null) as $key => $pathItem) {
                 if (!self::isExtension($key) && is_array($pathItem)) {
                     yield [$root->append($field, $key), $pathItem];

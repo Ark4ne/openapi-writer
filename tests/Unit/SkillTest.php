@@ -78,6 +78,15 @@ final class SkillTest extends TestCase
         );
     }
 
+    public function test_the_redoc_example_keeps_the_tag_hierarchy_in_3_0(): void
+    {
+        $variables = self::examples('versions.md');
+
+        self::assertSame([['name' => 'shop', 'tags' => ['shop', 'orders']]], $variables['tagGroups'] ?? null);
+        self::assertSame(['[dropped] /info/summary: summary needs 3.1.0'], $variables['redocLost'] ?? null);
+        self::assertSame([], $variables['redocViolations'] ?? null);
+    }
+
     public function test_the_recipes_validate_in_every_version_and_run_a_custom_rule(): void
     {
         $variables = self::examples('recipes.md');

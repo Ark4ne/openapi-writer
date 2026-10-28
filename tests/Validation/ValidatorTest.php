@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Tests\Validation;
 
+use Ark4ne\OpenApiWriter\Enums\VendorExtensions;
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Objects\Info;
@@ -11,6 +12,7 @@ use Ark4ne\OpenApiWriter\Objects\OpenApi;
 use Ark4ne\OpenApiWriter\Objects\Operation;
 use Ark4ne\OpenApiWriter\Objects\PathItem;
 use Ark4ne\OpenApiWriter\Objects\Response;
+use Ark4ne\OpenApiWriter\Objects\Tag;
 use Ark4ne\OpenApiWriter\Serialization\Serializer;
 use Ark4ne\OpenApiWriter\Tests\Support\Documents;
 use Ark4ne\OpenApiWriter\Tests\Support\SummaryRequiredRule;
@@ -121,6 +123,16 @@ final class ValidatorTest extends TestCase
         $violations = Validator::create()->validate($document, Version::V3_0_4);
 
         self::assertSame([['/webhooks', Serializer::class, Severity::Error]], self::summary($violations));
+    }
+
+    public function test_a_document_written_with_vendor_extensions_is_validated_as_written(): void
+    {
+        $document = Documents::webhookExample()->tags(Tag::create()->name('animals'), Tag::create()->name('pets')->parent('animals'));
+
+        $violations = Validator::create(new OpisJsonSchemaValidator())->validate($document, Version::V3_0_4, VendorExtensions::Redoc);
+
+        self::assertSame([], self::summary($violations));
+        self::assertThrows(InvalidArgumentException::class, static fn(): Violations => Validator::create()->validate($document, Version::V3_0_4, 'swagger'));
     }
 
     public function test_the_version_defaults_to_the_version_of_the_document(): void

@@ -18,8 +18,11 @@ use JsonSerializable;
 use stdClass;
 
 /**
- * Walks the object graph with its ClassMetadata and builds the array (Visitor). It skips the fields unknown to the
- * target version (`since` / `until`, VersionedEnum) and reports them, then hands each node to the rewriters.
+ * Walks the object graph with its ClassMetadata and builds the array (Visitor), then hands each node to the rewriters.
+ * A field unknown to the target version (`since` / `until`) is written in the node with diagnostics of its own, so
+ * that a rewriter can convert it by moving or removing its key: its diagnostics are then kept. A key still there
+ * after the rewriters is removed and reported unsupported, without the diagnostics of its content. An object holding
+ * an enum case unknown to the version (VersionedEnum) is left out and reported.
  * Empty objects and maps are written as `\stdClass`, so that JSON writes `{}` and never `[]`. It holds no version rule of its own.
  *
  * Keys are written in the order of the fields, whatever the rewriters did (`ClassMetadata::rank()`).
@@ -61,6 +64,7 @@ final readonly class Normalizer
         }
 
         $node = [];
+        $unavailable = [];
 
         foreach ($metadata->fields as $property => $field) {
             $value = $metadata->read($object, $property);
@@ -72,7 +76,15 @@ final readonly class Normalizer
             $name = $metadata->outputName($property);
 
             if (!self::isAvailable($field, $context->version)) {
-                $context->at($name)->unsupported(self::unavailable($name, $field));
+                $detached = $context->detached($name);
+                $written = $field->patterned ? Undefined::Value : ($metadata->isFreeValue($property)
+                    ? $this->free($value, $detached)
+                    : $this->value($value, $detached, $field->map));
+                $unavailable[$name] = [$detached, self::unavailable($name, $field), $written !== Undefined::Value];
+
+                if ($written !== Undefined::Value) {
+                    $node[$name] = $written;
+                }
 
                 continue;
             }
@@ -105,6 +117,20 @@ final readonly class Normalizer
         }
 
         $node = $this->rewriters->rewrite($object, $node, $context);
+
+        foreach ($unavailable as $name => [$detached, $message, $written]) {
+            if (!$written || array_key_exists($name, $node)) {
+                unset($node[$name]);
+                $context->at($name)->unsupported($message);
+
+                continue;
+            }
+
+            foreach ($detached->diagnostics as $diagnostic) {
+                $context->diagnostics->add($diagnostic);
+            }
+        }
+
         uksort($node, static fn(int|string $a, int|string $b): int => $metadata->rank($a) <=> $metadata->rank($b));
 
         return $node;

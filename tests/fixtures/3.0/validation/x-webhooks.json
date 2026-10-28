@@ -1,0 +1,30 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Validation",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "x-webhooks": {
+        "userCreated": {
+            "post": {
+                "operationId": "users.created",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "userDeleted": {
+            "post": {
+                "operationId": "users.created",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    }
+}

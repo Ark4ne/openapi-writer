@@ -54,7 +54,7 @@ en fait passer une partie au vert.
 | 2026-10-27 | Paquet `ark4ne/openapi-writer`, espace de noms `Ark4ne\OpenApiWriter\`, licence MIT |
 | 2026-10-27 | Versions OpenAPI 3.0.0 → 3.0.4, 3.1.0 → 3.1.2 et 3.2.0 ; PHP `^8.2` |
 | 2026-10-27 | Version par défaut 3.1.2 ; mode strict par défaut, mode permissif en option |
-| 2026-10-27 | `Tag.parent` retiré avant 3.2, sans conversion en `x-tagGroups` |
+| 2026-10-27 | `Tag.parent` retiré avant 3.2, sans conversion en `x-tagGroups` (remplacée le 2026-10-28) |
 | 2026-10-27 | Validation JSON Schema : `opis/json-schema` comme candidat, à confirmer au M2 |
 | 2026-10-27 | Lecture des champs par `__get` + `@property-read` (comme GoldSpec), conservée pour le moment |
 | 2026-10-27 | Listes et maps : setter qui remplace + méthode `add<Champ>()` qui ajoute, toutes deux renvoient un clone |
@@ -68,3 +68,4 @@ en fait passer une partie au vert.
 | 2026-10-28 | Immuabilité conservée : 500 opérations se construisent en 14 ms environ, `addPaths()` chemin par chemin coûtant 2 % de plus qu'un seul appel (7 % à 2 500 opérations) ; écriture en 3.0.4 en 84 ms, 12 Mo de pic (PHP 8.5, médiane de 15 passages après préchauffage, `composer benchmark`) |
 | 2026-10-28 | Exceptions immédiates réservées aux valeurs interdites dans toutes les versions (code de statut, champs exclusifs, doublon de `Schema.type`, `objectId` manquant ou en double, méthode fixe dans `additionalOperations`) ; les incohérences entre objets relèvent du validateur |
 | 2026-10-28 | Documentation pour agents : un skill livré dans le paquet (`skills/openapi-writer/`, en anglais), lié depuis le projet consommateur, plutôt qu'un fichier hors du paquet ; ses exemples et sa couverture de l'API sont testés. La documentation pour humains viendra après |
+| 2026-10-28 | `Tag.parent` et `webhooks` convertis en option (`VendorExtensions::Redoc`, désactivée par défaut) : `x-tagGroups` avant 3.2, `x-webhooks` avant 3.1, diagnostics `Converted`. Groupes sur un niveau, nommés d'après l'ancêtre le plus haut, un groupe par tag sans parent (Redoc masque les tags hors groupe) ; `kind` et `summary` restent non pris en charge ; une extension déjà définie par le document l'emporte et la fonctionnalité reste non prise en charge. Demandé par `laravel-openapi-generator` (E7, E12) |

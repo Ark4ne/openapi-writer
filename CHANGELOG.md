@@ -30,6 +30,9 @@ First release.
 - Strict mode (default): one `UnsupportedFeatureException` lists every feature the target version cannot express.
   Lenient mode (`Serializer::for($version, Strictness::Lenient)`) drops them and reports each removal and conversion
   as a diagnostic with its JSON Pointer.
+- Redoc vendor extensions, off by default (`VendorExtensions::Redoc`, argument of `Serializer::for()`, `toJson()`,
+  `toYaml()`, `toArray()` and `Validator::validate()`): webhooks written as `x-webhooks` before 3.1, tag parents as
+  `x-tagGroups` before 3.2, reported as conversions. An `x-webhooks` or `x-tagGroups` set by the document wins.
 - **Validation**: `Validator` writes the document, checks it against the official schema of its version
   (`OpisJsonSchemaValidator`, with `opis/json-schema`) and runs ten semantic rules: unique `operationId`, path
   parameters, unique parameters, local references, security requirements, declared tags, tag parents, equivalent

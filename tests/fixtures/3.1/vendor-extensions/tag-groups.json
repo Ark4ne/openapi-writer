@@ -1,0 +1,48 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "tags": [
+        {
+            "name": "animals",
+            "description": "Every animal"
+        },
+        {
+            "name": "pets"
+        },
+        {
+            "name": "cats"
+        },
+        {
+            "name": "billing"
+        },
+        {
+            "name": "invoices"
+        }
+    ],
+    "x-tagGroups": [
+        {
+            "name": "animals",
+            "tags": [
+                "animals",
+                "pets",
+                "cats"
+            ]
+        },
+        {
+            "name": "billing",
+            "tags": [
+                "billing"
+            ]
+        },
+        {
+            "name": "accounting",
+            "tags": [
+                "invoices"
+            ]
+        }
+    ]
+}

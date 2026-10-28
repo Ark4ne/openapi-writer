@@ -25,7 +25,8 @@ final readonly class RewriterChain
     /**
      * The library's chain. The order matters where rewriters combine (`nullable` + `$ref` + several types):
      * NullableWithoutTypeRewriter comes after the other Schema rewriters, so that the branch it builds holds keywords
-     * already written for the version.
+     * already written for the version. The vendor extension rewriters move fields unknown to the version, which the
+     * Normalizer would otherwise drop; the Tag nodes are rewritten before the OpenApi node that writes `x-tagGroups`.
      */
     public static function default(): self
     {
@@ -46,6 +47,8 @@ final readonly class RewriterChain
             new EmptyPathsRewriter(),
             new NonOAuthScopesRewriter(),
             new MediaTypeReferenceRewriter(),
+            new WebhooksExtensionRewriter(),
+            new TagGroupsExtensionRewriter(),
             new ReservedExtensionRewriter(),
         );
     }

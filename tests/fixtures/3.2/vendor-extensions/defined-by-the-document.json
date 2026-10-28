@@ -1,0 +1,48 @@
+{
+    "openapi": "3.2.0",
+    "info": {
+        "title": "Compatibility",
+        "version": "1.0.0"
+    },
+    "paths": {},
+    "webhooks": {
+        "userCreated": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "animals"
+        },
+        {
+            "name": "pets",
+            "parent": "animals"
+        }
+    ],
+    "x-webhooks": {
+        "legacy": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "x-tagGroups": [
+        {
+            "name": "Everything",
+            "tags": [
+                "animals",
+                "pets"
+            ]
+        }
+    ]
+}

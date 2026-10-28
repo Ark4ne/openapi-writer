@@ -40,6 +40,8 @@ final class RewriterChainTest extends TestCase
             Rewriters\EmptyPathsRewriter::class,
             Rewriters\NonOAuthScopesRewriter::class,
             Rewriters\MediaTypeReferenceRewriter::class,
+            Rewriters\WebhooksExtensionRewriter::class,
+            Rewriters\TagGroupsExtensionRewriter::class,
             Rewriters\ReservedExtensionRewriter::class,
         ], $classes);
     }

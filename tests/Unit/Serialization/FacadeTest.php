@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ark4ne\OpenApiWriter\Tests\Unit\Serialization;
 
+use Ark4ne\OpenApiWriter\Enums\VendorExtensions;
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Exceptions\OpenApiWriterException;
@@ -55,6 +56,20 @@ final class FacadeTest extends TestCase
     {
         self::assertJsonMatchesFixture(self::document()->toJson('3.0.4', JSON_PRETTY_PRINT), OpenApi::class, Version::V3_0_4, 'serializer/document');
         self::assertSame('3.0.4', self::document()->toArray('3.0.4')['openapi'] ?? null);
+    }
+
+    public function test_the_facades_write_the_vendor_extensions_they_are_given(): void
+    {
+        $document = self::document()->webhooks(PathItem::create('userCreated')->post(Operation::post()->responses(Response::ok())));
+
+        $array = $document->toArray(Version::V3_0_4, VendorExtensions::Redoc);
+        $json = json_decode($document->toJson(Version::V3_0_4, extensions: 'redoc'), true, 512, JSON_THROW_ON_ERROR);
+        $yaml = Yaml::parse($document->toYaml(Version::V3_0_4, VendorExtensions::Redoc));
+
+        self::assertArrayHasKey('x-webhooks', $array);
+        self::assertIsArray($json);
+        self::assertSame(array_keys($json), array_keys($array));
+        self::assertEquals($json, $yaml);
     }
 
     public function test_an_unknown_version_is_rejected(): void

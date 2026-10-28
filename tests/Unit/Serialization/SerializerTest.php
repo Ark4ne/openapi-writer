@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ark4ne\OpenApiWriter\Tests\Unit\Serialization;
 
 use Ark4ne\OpenApiWriter\Enums\Strictness;
+use Ark4ne\OpenApiWriter\Enums\VendorExtensions;
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Objects\Info;
@@ -28,17 +29,20 @@ final class SerializerTest extends TestCase
 
         self::assertSame(Version::V3_1_2, $serializer->version);
         self::assertSame(Strictness::Strict, $serializer->strictness);
+        self::assertSame(VendorExtensions::None, $serializer->extensions);
         self::assertEquals(RewriterChain::default(), $serializer->rewriters);
     }
 
     public function test_for_accepts_the_enums_or_their_values(): void
     {
-        $fromValues = Serializer::for('3.0.4', 'lenient');
-        $fromEnums = Serializer::for(Version::V3_2_0, Strictness::Strict);
+        $fromValues = Serializer::for('3.0.4', 'lenient', 'redoc');
+        $fromEnums = Serializer::for(Version::V3_2_0, Strictness::Strict, VendorExtensions::Redoc);
 
         self::assertSame(Version::V3_0_4, $fromValues->version);
         self::assertSame(Strictness::Lenient, $fromValues->strictness);
+        self::assertSame(VendorExtensions::Redoc, $fromValues->extensions);
         self::assertSame(Version::V3_2_0, $fromEnums->version);
+        self::assertSame(VendorExtensions::Redoc, $fromEnums->extensions);
     }
 
     public function test_for_rejects_an_unknown_version(): void
@@ -53,6 +57,13 @@ final class SerializerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         Serializer::for(Version::V3_1_2, 'loose');
+    }
+
+    public function test_for_rejects_unknown_vendor_extensions(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Serializer::for(Version::V3_1_2, Strictness::Strict, 'swagger');
     }
 
     public function test_serialize_returns_the_document_and_its_version(): void
@@ -117,7 +128,7 @@ final class SerializerTest extends TestCase
 
     public function test_a_custom_rewriter_chain_replaces_the_default_one(): void
     {
-        $serializer = Serializer::for(Version::V3_1_2, Strictness::Strict, new RewriterChain(new RenamingRewriter()));
+        $serializer = Serializer::for(Version::V3_1_2, Strictness::Strict, rewriters: new RewriterChain(new RenamingRewriter()));
 
         $result = $serializer->serialize(Info::create()->title('Users API')->version('1.0.0'));
 

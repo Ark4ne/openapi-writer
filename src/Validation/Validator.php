@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ark4ne\OpenApiWriter\Validation;
 
 use Ark4ne\OpenApiWriter\Enums\Strictness;
+use Ark4ne\OpenApiWriter\Enums\VendorExtensions;
 use Ark4ne\OpenApiWriter\Enums\Version;
 use Ark4ne\OpenApiWriter\Exceptions\InvalidArgumentException;
 use Ark4ne\OpenApiWriter\Objects\OpenApi;
@@ -82,13 +83,14 @@ final readonly class Validator
     }
 
     /**
-     * @param Version|string|null $version default: the `openapi` field of the document, else 3.1.2
+     * @param Version|string|null     $version    default: the `openapi` field of the document, else 3.1.2
+     * @param VendorExtensions|string $extensions the vendor extensions the document is written with
      *
-     * @throws InvalidArgumentException on an unknown version
+     * @throws InvalidArgumentException on an unknown version or vendor extensions
      */
-    public function validate(OpenApi $openApi, Version|string|null $version = null): Violations
+    public function validate(OpenApi $openApi, Version|string|null $version = null, VendorExtensions|string $extensions = VendorExtensions::None): Violations
     {
-        $serializer = Serializer::for($version ?? $openApi->openapi, Strictness::Lenient);
+        $serializer = Serializer::for($version ?? $openApi->openapi, Strictness::Lenient, $extensions);
         $result = $serializer->serialize($openApi);
         $violations = new Violations();
 
