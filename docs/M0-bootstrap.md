@@ -25,7 +25,7 @@
 ## Critères de sortie
 
 - [x] Toutes les vérifications passent en local (PHP 8.5, dépendances au plus haut et au plus bas)
-- [ ] CI verte sur GitHub pour PHP 8.2, 8.3, 8.4 et 8.5, dépendances `lowest` et `highest`
+- [ ] CI verte sur GitHub pour PHP 8.2, 8.3, 8.4 et 8.5
 
 ## Notes
 
@@ -34,4 +34,7 @@
 - La CI tourne sur `push` vers `main` et sur chaque pull request ; une branche est couverte par sa PR, sans double
   exécution de la matrice.
 - Dépendances `lowest` vérifiées sur PHP 8.5 : PHPUnit 11.5.0 passe, `failOnPhpunitDeprecation` compris.
+- 2026-10-28 : la matrice `lowest` est retirée de la CI. La bibliothèque n'a aucune dépendance d'exécution, elle
+  ne vérifiait que les outils de développement (une vieille version d'`opis/json-schema` émet une dépréciation sous
+  PHP 8.5). La matrice PHP 8.2 → 8.5 installe symfony/yaml 7 et 8, qui écrivent une map vide `{  }` et `{}`.
 - PHP-CS-Fixer tourne sur PHP 8.4 en CI ; `setUnsupportedPhpVersionAllowed(true)` permet de le lancer sur 8.5 en local.

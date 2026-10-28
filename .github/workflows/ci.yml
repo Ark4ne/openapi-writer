@@ -15,13 +15,13 @@ concurrency:
 
 jobs:
   tests:
-    name: Tests (PHP ${{ matrix.php }}, ${{ matrix.dependencies }})
+    name: Tests (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        # The library has no runtime dependency: the lowest versions would only test the development tools.
         php: ['8.2', '8.3', '8.4', '8.5']
-        dependencies: ['lowest', 'highest']
     steps:
       - uses: actions/checkout@v4
 
@@ -31,8 +31,6 @@ jobs:
           coverage: none
 
       - uses: ramsey/composer-install@v3
-        with:
-          dependency-versions: ${{ matrix.dependencies }}
 
       - name: PHPUnit
         run: vendor/bin/phpunit

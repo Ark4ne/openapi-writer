@@ -10,6 +10,7 @@ use Ark4ne\OpenApiWriter\Tests\Support\Documents;
 use Ark4ne\OpenApiWriter\Tests\Support\Fixtures;
 use Ark4ne\OpenApiWriter\Tests\TestCase;
 use stdClass;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * YAML needs `symfony/yaml`, a suggested dependency installed for development. Without it `toYaml()` throws a
@@ -20,8 +21,10 @@ final class YamlEncoderTest extends TestCase
     public function test_it_writes_empty_maps_as_empty_mappings_and_empty_lists_as_empty_sequences(): void
     {
         $yaml = (new SymfonyYamlEncoder())->encode(['paths' => new stdClass(), 'tags' => [], 'security' => [new stdClass()]]);
+        // symfony/yaml writes an empty mapping `{}` from 8.1 and `{  }` before: both are the same YAML.
+        $emptyMapping = Yaml::dump(new stdClass(), 0, 2, Yaml::DUMP_OBJECT_AS_MAP);
 
-        self::assertSame((string) file_get_contents(Fixtures::DIRECTORY . 'encoders/empty-values.yaml'), $yaml);
+        self::assertSame(str_replace('{}', $emptyMapping, (string) file_get_contents(Fixtures::DIRECTORY . 'encoders/empty-values.yaml')), $yaml);
     }
 
     public function test_to_yaml_writes_the_same_document_as_to_json(): void
