@@ -370,7 +370,7 @@ With another agent, point its instructions file (`AGENTS.md`…) to
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). The design is documented (in French) in [docs/architecture.md](docs/architecture.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md). The design is documented in [docs/architecture.md](docs/architecture.md).
 
 ## License
 

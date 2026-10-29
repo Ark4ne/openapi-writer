@@ -6,7 +6,7 @@
 composer install
 ```
 
-The design is documented (in French) in [`docs/architecture.md`](docs/architecture.md): read it before writing code.
+The design is documented in [`docs/architecture.md`](docs/architecture.md): read it before writing code.
 In short, the model **describes** and the serialization **decides**: one field of the specification is one annotated
 property, one difference between versions is one class.
 
@@ -21,7 +21,6 @@ Every check below runs in the CI on each push and pull request.
 | `composer stan` | PHPStan at max level on `src/`, `tests/` and `bin/`, with the `phpat` architecture rules |
 | `composer cs` / `composer cs:fix` | Checks / fixes the code style (PER-CS) |
 | `composer mutation` | Mutation testing, minimum 85% MSI (needs `infection` installed globally) |
-| `composer progress` | Rebuilds the progress table of `docs/README.md` from the milestone checklists |
 | `composer ci` | Every blocking check except coverage and mutation |
 | `composer fixtures:update` | Rewrites the expected JSON files from the current output: review the diff |
 | `composer benchmark` | Builds and writes a document of 500 operations, and prints the median timings |
@@ -107,12 +106,6 @@ Create `src/Validation/Rules/<Name>Rule.php`, implementing `Rule`: it reads the 
 with `\stdClass` for empty objects) and adds a `Violation` for each problem. Register it in `Validator::create()`, and
 add a valid and an invalid document per case in `tests/Validation/Rules/<Name>RuleTest.php`, with their fixtures
 in `tests/fixtures/<line>/validation/`.
-
-## Roadmap
-
-The roadmap lives in [`docs/`](docs/README.md) (written in French): one document per milestone (M0 → M7) with its
-checklist. When a deliverable is done, tick it in its milestone document, run `composer progress`, and commit both
-files: the CI fails when the progress table is out of date.
 
 ## Test suites
 

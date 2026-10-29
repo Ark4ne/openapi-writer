@@ -1,42 +1,42 @@
-# Architecture, concepts et patterns
+# Architecture, concepts and patterns
 
-Ce document fixe les concepts et les patterns de la librairie. Toute contribution les suit ; un écart se discute
-et se consigne ici avant d'être codé.
+This document sets the concepts and patterns of the library. Every contribution follows them; a departure is
+discussed and recorded here before it is coded.
 
-**Idée directrice :** le modèle **décrit** (déclaratif), la sérialisation **décide** (version, conversions,
-rejets). Un champ = une propriété annotée ; une différence entre versions = une classe. Rien d'autre.
+**Guiding idea:** the model **describes** (declarative), the serialization **decides** (version, conversions,
+rejections). One field = one annotated property; one difference between versions = one class. Nothing else.
 
-## 1. Couches et règle de dépendance
+## 1. Layers and dependency rule
 
 ```
 Support  ←  Enums  ←  Metadata  ←  Objects / Contracts  ←  Serialization  ←  Validation
-   (Exceptions : utilisables par toutes les couches)
+   (Exceptions: usable by every layer)
 ```
 
-| Couche | Dossier | Contenu |
+| Layer | Folder | Content |
 | --- | --- | --- |
-| Support | `src/Support/` | `Undefined`, `JsonPointer` : briques sans dépendance |
+| Support | `src/Support/` | `Undefined`, `JsonPointer`: building blocks without dependency |
 | Enums | `src/Enums/` | `Version`, `Strictness`, `ParameterLocation`… |
-| Metadata | `src/Metadata/` | Attribut `#[Field]`, `ClassMetadata`, `MetadataFactory` |
-| Objects | `src/Objects/`, `src/Contracts/` | Les 29 objets de la spec, les unions « X ou Reference » |
+| Metadata | `src/Metadata/` | `#[Field]` attribute, `ClassMetadata`, `MetadataFactory` |
+| Objects | `src/Objects/`, `src/Contracts/` | The 29 objects of the specification, the "X or Reference" unions |
 | Serialization | `src/Serialization/` | `Serializer`, `Normalizer`, `Rewriters/`, `Diagnostics`, `Encoders/` |
 | Validation | `src/Validation/` | `Validator`, `Rules/`, `Violations` |
-| Exceptions | `src/Exceptions/` | Hiérarchie unique d'exceptions |
+| Exceptions | `src/Exceptions/` | Single exception hierarchy |
 
-- Une couche ne dépend que des couches à sa gauche. `Objects` ne connaît ni `Serialization` ni `Validation`.
-- **Seule exception :** la classe de base `SpecObject` expose `toArray()` / `toJson()` / `toYaml()` en façade,
-  qui délègue à `Serializer`. Aucun autre objet n'importe `Serialization`.
-- `Exceptions` ne dépend que de `Support`, `Enums` et des classes de diagnostic de `Serialization`
-  (`Diagnostics`, `Diagnostic`, `DiagnosticLevel`), que porte `UnsupportedFeatureException`.
-- Ces règles sont vérifiées par des tests d'architecture (`phpat`, extension PHPStan) dans la CI :
-  `tests/Architecture/ArchitectureTest.php`, exécuté par `composer stan`.
+- A layer depends only on the layers to its left. `Objects` knows neither `Serialization` nor `Validation`.
+- **Only exception:** the base class `SpecObject` exposes `toArray()` / `toJson()` / `toYaml()` as a facade that
+  delegates to `Serializer`. No other object imports `Serialization`.
+- `Exceptions` depends only on `Support`, `Enums` and the diagnostic classes of `Serialization` (`Diagnostics`,
+  `Diagnostic`, `DiagnosticLevel`), which `UnsupportedFeatureException` carries.
+- These rules are checked by architecture tests (`phpat`, a PHPStan extension) in the CI:
+  `tests/Architecture/ArchitectureTest.php`, run by `composer stan`.
 
-## 2. Le modèle
+## 2. The model
 
-### 2.1 `SpecObject` : objet de valeur immuable
+### 2.1 `SpecObject`: immutable value object
 
-Toutes les classes de `src/Objects/` héritent de `SpecObject` (ou de `ExtensibleSpecObject`). Patterns :
-**Value Object immuable**, **Fluent Interface**, **Named Constructor**.
+Every class of `src/Objects/` extends `SpecObject` (or `ExtensibleSpecObject`). Patterns: **immutable Value
+Object**, **Fluent Interface**, **Named Constructor**.
 
 ```php
 final class Info extends ExtensibleSpecObject
@@ -59,168 +59,167 @@ final class Info extends ExtensibleSpecObject
         return $this->with('summary', $summary);
     }
 
-    // … une méthode par champ, même nom que dans la spec
+    // … one method per field, same name as in the specification
 }
 ```
 
-Règles :
+Rules:
 
-1. **Classes `final`.** On étend par composition et par extensions `x-*`, jamais par héritage.
-   Seules `SpecObject` et `ExtensibleSpecObject` sont abstraites.
-2. **Construction** : constructeur `final protected`, création par `create(?string $objectId = null)` et par les
-   raccourcis sémantiques (`Schema::string()`, `Operation::get()`…), qui appellent tous `create()`.
-3. **Modification** : chaque setter appelle `with()` de la base, qui clone et affecte. L'objet courant ne change
-   jamais. Aucune autre façon d'écrire une propriété.
-4. **Ordre des propriétés = ordre des champs dans le texte de la spec.** C'est cet ordre qui donne l'ordre des
-   clés en sortie ; on ne trie jamais.
-5. **Lecture** : propriétés `protected` exposées en lecture par `__get` (comme GoldSpec), déclarées en
-   `@property-read` pour l'analyse statique. Un champ non défini se lit `null` ; `has('field')` distingue
-   « non défini » de `null`.
+1. **`final` classes.** Extension goes through composition and `x-*` extensions, never inheritance. Only
+   `SpecObject` and `ExtensibleSpecObject` are abstract.
+2. **Construction**: `final protected` constructor, creation through `create(?string $objectId = null)` and the
+   semantic shortcuts (`Schema::string()`, `Operation::get()`…), which all call `create()`.
+3. **Modification**: every setter calls `with()` from the base, which clones and assigns. The current object never
+   changes. There is no other way to write a property.
+4. **Property order = order of the fields in the text of the specification.** This order gives the order of the
+   keys in the output; nothing is ever sorted.
+5. **Reading**: `protected` properties exposed read-only through `__get` (like `goldspecdigital/oooas`), declared as
+   `@property-read` for static analysis. An unset field reads `null`; `has('field')` tells "unset" from `null`.
 
-### 2.2 `Undefined` : la sentinelle
+### 2.2 `Undefined`: the sentinel
 
-`enum Undefined { case Value; }` dans `src/Support/`. C'est la valeur par défaut de **tous** les champs.
+`enum Undefined { case Value; }` in `src/Support/`. It is the default value of **every** field.
 
-- Un champ `Undefined` n'apparaît pas en sortie ; un champ `null` s'écrit `null`.
-- Setters des champs typés (`?string`, `?Contact`…) : `null` remet le champ à `Undefined`.
-- Champs à valeur libre (`default`, `example`, `const`, valeurs d'extensions) : `null` est une vraie valeur.
-  Pour retirer un champ, `without('default')`.
-- `Undefined` n'apparaît jamais dans une signature publique.
+- An `Undefined` field does not appear in the output; a `null` field is written `null`.
+- Setters of typed fields (`?string`, `?Contact`…): `null` resets the field to `Undefined`.
+- Free-value fields (`default`, `example`, `const`, extension values): `null` is a real value. To remove the field,
+  `without('default')`.
+- `Undefined` never appears in a public signature.
 
-### 2.3 Métadonnées déclaratives : `#[Field]`
+### 2.3 Declarative metadata: `#[Field]`
 
-Pattern **Metadata Mapping**. L'attribut porte tout ce que la sérialisation doit savoir d'un champ :
+**Metadata Mapping** pattern. The attribute carries everything the serialization needs to know about a field:
 
-| Argument | Rôle | Exemple |
+| Argument | Role | Example |
 | --- | --- | --- |
-| `name` | Nom en sortie si différent de la propriété | `#[Field(name: '$ref')] protected … $ref` |
-| `since` | Première version qui connaît le champ | `#[Field(since: Version::V3_1_0)]` |
-| `until` | Dernière version qui le connaît | `#[Field(until: Version::V3_0_4)]` |
-| `map` | Tableau indexé par `objectId` (écrit `{}` même vide) | `#[Field(map: true)]` |
-| `emit` | `false` pour une intention que seul un rewriter traduit | `#[Field(emit: false)] protected bool $nullable` |
-| `patterned` | Map dont les entrées s'écrivent directement dans l'objet (champs « patterned » de la spec) | `Responses::$responses`, `Callback::$pathItems`, `SecurityRequirement::$schemes` |
-| `keyedByObjectId` | `false` pour une map de valeurs (setters en `array<string, T>`), sans `objectId` à lire | `#[Field(map: true, keyedByObjectId: false)] protected array $scopes` |
+| `name` | Output name when it differs from the property | `#[Field(name: '$ref')] protected … $ref` |
+| `since` | First version that knows the field | `#[Field(since: Version::V3_1_0)]` |
+| `until` | Last version that knows it | `#[Field(until: Version::V3_0_4)]` |
+| `map` | Array keyed by `objectId` (written `{}` even when empty) | `#[Field(map: true)]` |
+| `emit` | `false` for an intent that only a rewriter translates | `#[Field(emit: false)] protected bool $nullable` |
+| `patterned` | Map whose entries are written directly in the object (the "patterned" fields of the specification) | `Responses::$responses`, `Callback::$pathItems`, `SecurityRequirement::$schemes` |
+| `keyedByObjectId` | `false` for a map of values (setters take an `array<string, T>`), with no `objectId` to read | `#[Field(map: true, keyedByObjectId: false)] protected array $scopes` |
 
-- `MetadataFactory` lit les attributs par réflexion une seule fois par classe et met le résultat en cache
-  (**Flyweight**). C'est le seul cache autorisé, car il est pur et déterministe.
-- La disponibilité d'un champ selon la version est **toujours** déclarée par `since` / `until`, jamais codée
-  dans un `if`.
+- `MetadataFactory` reads the attributes through reflection once per class and caches the result (**Flyweight**).
+  It is the only cache allowed, because it is pure and deterministic.
+- The availability of a field per version is **always** declared through `since` / `until`, never coded in an `if`.
 
-### 2.4 Enums versionnées
+### 2.4 Versioned enums
 
-Les cas d'enum apparus dans une version ultérieure le déclarent (`ParameterLocation::Querystring`,
-`HttpMethod::Query`, `SecuritySchemeType::MutualTLS`). Ces enums implémentent `VersionedEnum::since(): Version` ;
-la sérialisation les traite exactement comme un champ `since`. Le `since()` d'un cas est une déclaration, jamais
-un corps neutre. Les raccourcis s'appuient sur ces enums (`Operation::get()` utilise `HttpMethod::Get->value`).
-`VersionedEnum` vit dans `src/Enums/` : une enum ne peut pas dépendre de `Contracts`, qui est à sa droite.
+Enum cases that appeared in a later version declare it (`ParameterLocation::Querystring`, `HttpMethod::Query`,
+`SecuritySchemeType::MutualTLS`). These enums implement `VersionedEnum::since(): Version`; the serialization treats
+them exactly like a `since` field. The `since()` of a case is a declaration, never a neutral body. The shortcuts rely
+on these enums (`Operation::get()` uses `HttpMethod::Get->value`). `VersionedEnum` lives in `src/Enums/`: an enum
+cannot depend on `Contracts`, which is to its right.
 
-### 2.5 Unions « X ou Reference » : interfaces de contrat
+### 2.5 "X or Reference" unions: contract interfaces
 
-Partout où la spec accepte « X ou Reference Object », le type est une interface de `src/Contracts/`
-(`SchemaContract`, `ResponseContract`…) implémentée par l'objet et par `Reference`. Pas de `Schema|Reference`
-dans les signatures.
+Wherever the specification accepts "X or Reference Object", the type is an interface of `src/Contracts/`
+(`SchemaContract`, `ResponseContract`…) implemented by the object and by `Reference`. No `Schema|Reference` in the
+signatures.
 
-- Les raccourcis `Response::ref()`, `Parameter::ref()`… renvoient un `Reference` et construisent eux-mêmes le chemin
-  `#/components/<section>/<nom>` : un `Reference` ne connaît pas sa section, `Reference::to()` écrit tel quel.
-- **Exception :** `Schema::ref()` renvoie un `Schema` qui porte `$ref`. En JSON Schema, `$ref` est un mot-clé
-  comme un autre : `Schema::ref('User')->nullable()` et les champs voisins restent possibles, et les rewriters les
-  convertissent pour 3.0. Ce champ n'a donc pas de setter d'instance (il partagerait le nom du raccourci statique).
-- Les champs dont le nom commence par `$` ont un setter sans le `$` (`$id` → `id()`, `$defs` → `defs()`) et
+- The shortcuts `Response::ref()`, `Parameter::ref()`… return a `Reference` and build the path
+  `#/components/<section>/<name>` themselves: a `Reference` does not know its section, `Reference::to()` writes its
+  argument as is.
+- **Exception:** `Schema::ref()` returns a `Schema` carrying `$ref`. In JSON Schema, `$ref` is a keyword like any
+  other: `Schema::ref('User')->nullable()` and sibling fields stay possible, and the rewriters convert them for 3.0.
+  This field therefore has no instance setter (it would share the name of the static shortcut).
+- Fields whose name starts with `$` have a setter without the `$` (`$id` → `id()`, `$defs` → `defs()`) and
   `#[Field(name: '$id')]`.
-- Sous-schémas booléens (JSON Schema 2020-12) : `items`, `contains`, `not`, `propertyNames`, `if` / `then` / `else`,
-  `unevaluated*` et `additionalProperties` acceptent `SchemaContract|bool`. `BooleanSchemaRewriter` les convertit
-  pour 3.0 (`{}` / `{not: {}}`), sauf `additionalProperties`, booléen dans toutes les versions.
+- Boolean subschemas (JSON Schema 2020-12): `items`, `contains`, `not`, `propertyNames`, `if` / `then` / `else`,
+  `unevaluated*` and `additionalProperties` accept `SchemaContract|bool`. `BooleanSchemaRewriter` converts them for
+  3.0 (`{}` / `{not: {}}`), except `additionalProperties`, boolean in every version.
 
-### 2.6 `objectId`, collections et maps
+### 2.6 `objectId`, collections and maps
 
-- `objectId` est la clé de l'objet dans son parent ; il ne fait pas partie des champs `#[Field]`.
-- Chaque champ liste ou map a **deux** méthodes, qui renvoient toutes deux un clone :
-    - le setter au nom de la spec, variadique, qui **remplace** tout le contenu : `->servers(Server ...$servers)` ;
-    - `add` + le nom exact du champ, variadique, qui **ajoute** à la fin : `->addServers(Server ...$servers)`.
-- Nom des méthodes `add*` : `add` suivi du nom du champ, sans mise au singulier. On évite ainsi les pluriels
-  irréguliers (`requestBodies`) et les collisions (`example()` existe déjà à côté de `examples()`).
-  Exemples : `addProperties()`, `addPaths()`, `addTags()`, `addRequired()`, `addAllOf()`.
-- Listes (`servers`, `tags`, `required`, `allOf`…) : `add*` ajoute sans dédoublonner ; l'unicité éventuelle
-  (`required`, `enum`) relève du validateur. **Exception :** `Schema.type`, dont un doublon est interdit dans toutes
-  les versions : `type()` et `addType()` le refusent (`SpecObjectTestCase::listsOfUniqueValues()`).
-- Maps (`properties`, `paths`, `responses`, sections de `components`) : indexées par `objectId`, dans les deux
-  méthodes. `objectId` manquant → `MissingObjectIdException`. Un `objectId` déjà présent → `DuplicateObjectIdException`,
-  avec `add*` comme avec le setter : on ne remplace jamais une entrée en silence.
-- Les deux méthodes passent par la base : `with('servers', $items)` et `withAdded('servers', $items)`.
-- `Responses` : une réponse d'`objectId` `default` va dans le champ `default`. `responses()` (qui remplace) la
-  substitue à la précédente et garde celle-ci quand le nouvel ensemble n'en contient pas ; `addResponses()` (qui
-  ajoute) lève `DuplicateObjectIdException` si le champ est déjà défini.
-- `PathItem::operations()` reconnaît une méthode fixe quelle que soit sa casse (`GET` → `get`) ;
-  `additionalOperations()` et `addAdditionalOperations()` la refusent, quelle que soit sa casse (`QUERY` compris).
-- Champs exclusifs, refusés à la construction dans toutes les versions : `License.url` / `identifier`,
+- `objectId` is the key of the object in its parent; it is not one of the `#[Field]` fields.
+- Every list or map field has **two** methods, both returning a clone:
+    - the setter named after the specification, variadic, which **replaces** the whole content:
+      `->servers(Server ...$servers)`;
+    - `add` + the exact field name, variadic, which **appends**: `->addServers(Server ...$servers)`.
+- Name of the `add*` methods: `add` followed by the field name, never singularized. This avoids irregular plurals
+  (`requestBodies`) and collisions (`example()` already exists next to `examples()`). Examples: `addProperties()`,
+  `addPaths()`, `addTags()`, `addRequired()`, `addAllOf()`.
+- Lists (`servers`, `tags`, `required`, `allOf`…): `add*` appends without deduplicating; uniqueness, when required
+  (`required`, `enum`), belongs to the validator. **Exception:** `Schema.type`, where a duplicate is forbidden in
+  every version: `type()` and `addType()` reject it (`SpecObjectTestCase::listsOfUniqueValues()`).
+- Maps (`properties`, `paths`, `responses`, sections of `components`): keyed by `objectId`, in both methods. A
+  missing `objectId` → `MissingObjectIdException`. An `objectId` already present → `DuplicateObjectIdException`,
+  with `add*` as with the setter: an entry is never silently replaced.
+- Both methods go through the base: `with('servers', $items)` and `withAdded('servers', $items)`.
+- `Responses`: a response with the `objectId` `default` goes into the `default` field. `responses()` (replacing)
+  substitutes it for the previous one and keeps the previous one when the new set has none; `addResponses()`
+  (appending) throws `DuplicateObjectIdException` when the field is already set.
+- `PathItem::operations()` recognizes a fixed method whatever its case (`GET` → `get`); `additionalOperations()` and
+  `addAdditionalOperations()` reject it, whatever its case (`QUERY` included).
+- Exclusive fields, rejected at construction in every version: `License.url` / `identifier`,
   `Link.operationRef` / `operationId`, `example` / `examples` (`Parameter`, `Header`, `MediaType`),
-  `Example.value` / `externalValue` / `dataValue` / `serializedValue` (`value` exclut les trois autres,
-  `serializedValue` exclut `externalValue`), `encoding` / `prefixEncoding` + `itemEncoding` (`MediaType`,
-  `Encoding`), `Xml.nodeType` / `attribute` + `wrapped`. Une collection vide ne compte pas comme définie.
-  `exclusiveOf($field, ...$others)` porte la règle, dans la base `SpecObject`.
-- `Xml.nodeType` est une enum (`XmlNodeType`), comme les autres valeurs fermées.
-- Dans un champ à valeur libre (`example`, `value`, `dataValue`), un tableau vide est une valeur : il compte comme
-  défini pour les champs exclusifs.
-- `Schema::type()` sans argument retire le type.
-- `Operation::responses()` accepte un `Responses` ou des réponses qu'il enveloppe : c'est le seul setter qui ne se
-  réduit pas à un appel de `with()`.
-- **Exception : maps de valeurs scalaires** (`Link.parameters`, `Discriminator.mapping`, `OAuthFlow.scopes`,
-  `Schema.dependentRequired`, `SecurityRequirement`) : leurs entrées n'ont pas d'`objectId`, les deux méthodes
-  prennent donc un `array<string, T>` au lieu d'arguments variadiques, et le champ le déclare
-  (`keyedByObjectId: false`) pour que `with()` n'ait rien à deviner. Une clé déjà présente lève aussi
-  `DuplicateObjectIdException`.
-- `SpecObjectTestCase` vérifie que chaque champ liste ou map possède bien ses deux méthodes.
+  `Example.value` / `externalValue` / `dataValue` / `serializedValue` (`value` excludes the other three,
+  `serializedValue` excludes `externalValue`), `encoding` / `prefixEncoding` + `itemEncoding` (`MediaType`,
+  `Encoding`), `Xml.nodeType` / `attribute` + `wrapped`. An empty collection does not count as set.
+  `exclusiveOf($field, ...$others)`, in the base `SpecObject`, carries the rule.
+- `Xml.nodeType` is an enum (`XmlNodeType`), like the other closed values.
+- In a free-value field (`example`, `value`, `dataValue`), an empty array is a value: it counts as set for the
+  exclusive fields.
+- `Schema::type()` without argument removes the type.
+- `Operation::responses()` accepts a `Responses` or responses that it wraps: it is the only setter that is not a
+  single call to `with()`.
+- **Exception: maps of scalar values** (`Link.parameters`, `Discriminator.mapping`, `OAuthFlow.scopes`,
+  `Schema.dependentRequired`, `SecurityRequirement`): their entries have no `objectId`, so both methods take an
+  `array<string, T>` instead of variadic arguments, and the field declares it (`keyedByObjectId: false`) so that
+  `with()` has nothing to guess. A key already present also throws `DuplicateObjectIdException`.
+- `SpecObjectTestCase` checks that every list or map field has its two methods.
 
 ### 2.7 Extensions
 
-`ExtensibleSpecObject` ajoute `x(string $name, mixed $value)` et `withoutX(string $name)`. Seuls les objets que la
-spec déclare extensibles en héritent : `Reference` et `SecurityRequirement` ne le sont pas.
+`ExtensibleSpecObject` adds `x(string $name, mixed $value)` and `withoutX(string $name)`. Only the objects the
+specification declares extensible extend it: `Reference` and `SecurityRequirement` are not.
 
-## 3. La sérialisation
+## 3. The serialization
 
 ```
-OpenApi ──► Normalizer (parcours) ──► Rewriters (une différence de version chacun) ──► array ──► Encoder (JSON | YAML)
+OpenApi ──► Normalizer (traversal) ──► Rewriters (one version difference each) ──► array ──► Encoder (JSON | YAML)
                  │                              │
-                 └────── Context : Version, Strictness, JsonPointer, Diagnostics ──────┘
+                 └────── Context: Version, Strictness, JsonPointer, Diagnostics ──────┘
 ```
 
-| Pattern | Classe | Rôle |
+| Pattern | Class | Role |
 | --- | --- | --- |
-| **Visitor** (parcours d'arbre) | `Normalizer` | Parcourt le graphe d'objets avec `ClassMetadata`, construit le tableau, suit le JSON Pointer |
-| **Chain of Responsibility / Pipeline** | `Rewriter` + `RewriterChain` | Chaque rewriter traite **une** différence entre versions |
-| **Notification** | `Diagnostics` | Collecte toutes les conversions et tous les rejets, au lieu de s'arrêter au premier |
-| **Ports & Adapters** | `Encoder` (`JsonEncoder`, `SymfonyYamlEncoder`) | Isole les dépendances optionnelles |
-| **Facade** | `Serializer`, `SpecObject::toJson()` | Point d'entrée unique |
+| **Visitor** (tree traversal) | `Normalizer` | Walks the object graph with `ClassMetadata`, builds the array, follows the JSON Pointer |
+| **Chain of Responsibility / Pipeline** | `Rewriter` + `RewriterChain` | Each rewriter handles **one** difference between versions |
+| **Notification** | `Diagnostics` | Collects every conversion and every rejection, instead of stopping at the first one |
+| **Ports & Adapters** | `Encoder` (`JsonEncoder`, `SymfonyYamlEncoder`) | Isolates the optional dependencies |
+| **Facade** | `Serializer`, `SpecObject::toJson()` | Single entry point |
 
 ### 3.1 `Normalizer`
 
-Pour chaque objet, le `Normalizer` :
+For each object, the `Normalizer`:
 
-1. lit ses `ClassMetadata` ;
-2. pour chaque champ défini et émis : vérifie `since` / `until` contre la version cible. Si le champ est indisponible,
-   il signale `Unsupported` et l'ignore, sauf si un rewriter déclare le convertir (`UnavailableFieldRewriter::convertsTo()`) :
-   il le normalise alors avec ses propres diagnostics (`Context::detached()`), qui pointent là où le rewriter
-   l'écrit. Les autres rewriters ne voient donc jamais un champ que la version ignore. Sinon il le normalise
-   (récursion sur les objets, listes, maps) ;
-3. écrit un objet ou une map vide en `\stdClass` (donc `{}` en JSON, jamais `[]`), y compris dans `toArray()` ;
-   les rewriters respectent la même convention ;
-4. passe le nœud obtenu à la `RewriterChain`, puis ajoute les diagnostics des champs convertis ; un champ annoncé
-   mais encore présent est retiré et signalé `Unsupported`, sans les diagnostics de son contenu ;
-5. remet les clés du nœud réécrit dans l'ordre des champs (tri stable, rang précalculé par `ClassMetadata::rank()`) :
-   les entrées d'un champ « patterned » à la place de ce champ, les clés inconnues ensuite, les extensions en
-   dernier. Un rewriter n'a donc pas à placer les clés qu'il ajoute (`anyOf` à la place d'un `$ref`…).
+1. reads its `ClassMetadata`;
+2. for each set and emitted field: checks `since` / `until` against the target version. When the field is
+   unavailable, it reports `Unsupported` and skips it, unless a rewriter declares that it converts it
+   (`UnavailableFieldRewriter::convertsTo()`): it then normalizes it with its own diagnostics
+   (`Context::detached()`), which point where the rewriter writes it. The other rewriters therefore never see a
+   field the version ignores. Otherwise it normalizes the field (recursion into objects, lists, maps);
+3. writes an empty object or map as `\stdClass` (so `{}` in JSON, never `[]`), including in `toArray()`; the
+   rewriters follow the same convention;
+4. passes the resulting node to the `RewriterChain`, then adds the diagnostics of the converted fields; a field
+   announced as converted but still present is removed and reported `Unsupported`, without the diagnostics of its
+   content;
+5. puts the keys of the rewritten node back in the order of the fields (stable sort, rank precomputed by
+   `ClassMetadata::rank()`): the entries of a "patterned" field in place of that field, unknown keys next, extensions
+   last. A rewriter therefore never has to place the keys it adds (`anyOf` in place of a `$ref`…).
 
-Une map non vide dont les clés forment une liste (`"0"`, `"1"`…, que PHP convertit en entiers) est écrite en
-`\stdClass`, comme une map vide : JSON en fait un objet, jamais un tableau.
+A non-empty map whose keys form a list (`"0"`, `"1"`…, which PHP turns into integers) is written as `\stdClass`, like
+an empty map: JSON makes it an object, never an array.
 
-Une valeur libre (`default`, `example`, extensions…) est écrite telle quelle, après vérification récursive (tableaux
-et `\stdClass`) : un `JsonSerializable` est remplacé par ses données, pour que JSON et YAML écrivent la même chose ;
-`NAN`, `INF`, une ressource ou un autre objet lèvent une `InvalidArgumentException` qui porte le JSON Pointer de la
-valeur.
+A free value (`default`, `example`, extensions…) is written as is, after a recursive check (arrays and `\stdClass`):
+a `JsonSerializable` is replaced by its data, so that JSON and YAML write the same thing; `NAN`, `INF`, a resource or
+any other object throw an `InvalidArgumentException` carrying the JSON Pointer of the value.
 
-Le `Normalizer` ne contient **aucune** règle propre à une version.
+The `Normalizer` contains **no** version-specific rule.
 
-### 3.2 `Rewriter` : une différence de version = une classe
+### 3.2 `Rewriter`: one version difference = one class
 
 ```php
 interface Rewriter
@@ -228,75 +227,76 @@ interface Rewriter
     public function supports(SpecObject $object): bool;
 
     /**
-     * @param array<string, mixed> $node   le nœud normalisé de $object
-     * @return array<string, mixed>        le nœud réécrit pour $context->version
+     * @param array<string, mixed> $node   the normalized node of $object
+     * @return array<string, mixed>        the node rewritten for $context->version
      */
     public function rewrite(SpecObject $object, array $node, Context $context): array;
 }
 ```
 
-- Un rewriter couvre **une ligne** des tableaux de la spec (section 6), pour **toutes** les versions :
+- A rewriter covers **one row** of the version tables of the specification, for **every** version:
   `NullableRewriter`, `ExclusiveBoundsRewriter`, `ConstRewriter`, `SchemaExamplesRewriter`, `MultiTypeRewriter`,
   `RefSiblingsRewriter`, `ContentEncodingRewriter`, `ResponseDescriptionRewriter`, `EmptyPathsRewriter`…
-- Il lit l'intention dans le modèle (`$schema->nullable`) et l'écrit selon `$context->version`.
-- Il signale ce qu'il fait : `Converted` pour une conversion, `Unsupported` pour ce qui ne s'exprime pas.
-- L'ordre de la chaîne est explicite, dans `RewriterChain::default()`, et testé sur les combinaisons
-  (`nullable` + `$ref` + plusieurs types).
-- Quatre rewriters ne correspondent pas à une ligne de conversion : `OpenApiVersionRewriter` écrit la version cible
-  dans `openapi` ; `NonOAuthScopesRewriter` (scopes hors OAuth2, rejet en 3.0) travaille sur le nœud `OpenApi`,
-  qui contient tout le document ; `ReservedExtensionRewriter` refuse les préfixes `x-oai-` / `x-oas-` à partir de
-  3.1 ; `MediaTypeReferenceRewriter` refuse un `Reference` dans un `content` avant 3.2.
-- Deux rewriters écrivent des extensions de fournisseur, seulement avec l'option `VendorExtensions::Redoc` du
-  `Context` : `WebhooksExtensionRewriter` (`webhooks` → `x-webhooks` avant 3.1) et `TagGroupsExtensionRewriter`
-  (`Tag.parent` → `x-tagGroups` avant 3.2, sur les nœuds `Tag` puis `OpenApi`). Ils implémentent
-  `UnavailableFieldRewriter` et passent avant `NonOAuthScopesRewriter`, qui traite aussi les opérations de
-  `x-webhooks`. Avant 3.1, les règles de validation lisent `x-webhooks` comme `webhooks` (`Document`, `Scope`). Ce dernier lit le document entier
-  dans `Context::$document`, l'objet sérialisé à la racine.
-- Il n'y a donc pas de classe `V30Adapter` : « supporter 3.0 », c'est l'ensemble des `since` / `until` et des
-  rewriters.
+- It reads the intent in the model (`$schema->nullable`) and writes it according to `$context->version`.
+- It reports what it does: `Converted` for a conversion, `Unsupported` for what cannot be expressed.
+- The order of the chain is explicit, in `RewriterChain::default()`, and tested on the combinations (`nullable` +
+  `$ref` + several types).
+- Four rewriters do not match a conversion row: `OpenApiVersionRewriter` writes the target version in `openapi`;
+  `NonOAuthScopesRewriter` (scopes outside OAuth2, rejected in 3.0) works on the `OpenApi` node, which holds the
+  whole document; `ReservedExtensionRewriter` rejects the `x-oai-` / `x-oas-` prefixes from 3.1;
+  `MediaTypeReferenceRewriter` rejects a `Reference` in a `content` before 3.2.
+- Two rewriters write vendor extensions, only with the `VendorExtensions::Redoc` option of the `Context`:
+  `WebhooksExtensionRewriter` (`webhooks` → `x-webhooks` before 3.1) and `TagGroupsExtensionRewriter` (`Tag.parent`
+  → `x-tagGroups` before 3.2, on the `Tag` then `OpenApi` nodes; it reads the whole document in
+  `Context::$document`, the object serialized at the root). They implement `UnavailableFieldRewriter` and run before
+  `NonOAuthScopesRewriter`, which also handles the operations of `x-webhooks`. Before 3.1, the validation rules read
+  `x-webhooks` as `webhooks` (`Document`, `Scope`).
+- There is therefore no `V30Adapter` class: "supporting 3.0" is the set of `since` / `until` and rewriters.
 
-### 3.3 Diagnostics et mode strict
+### 3.3 Diagnostics and strict mode
 
-`Diagnostic` = niveau (`Converted`, `Dropped`, `Unsupported`), `JsonPointer`, message. À la fin du parcours :
+`Diagnostic` = level (`Converted`, `Dropped`, `Unsupported`), `JsonPointer`, message. At the end of the traversal:
 
-- **Strict** : s'il y a au moins un `Unsupported`, une seule `UnsupportedFeatureException` qui les contient tous ;
-- **Permissif** : chaque `Unsupported` devient `Dropped`, et le résultat porte la liste complète.
+- **Strict**: if there is at least one `Unsupported`, a single `UnsupportedFeatureException` holding all of them;
+- **Lenient**: each `Unsupported` becomes `Dropped`, and the result carries the complete list.
 
-Règles fixées par la suite de tests (M2) :
+Rules fixed by the test suite:
 
-- `Converted` signale toute sortie qui diffère de la forme du modèle (celle de la dernière ligne) : surtout en
-  3.0, mais aussi la `description` vide d'une réponse en 3.1, et `nullable` sur une `$ref` dans toutes les
-  versions. Le mode (strict ou permissif) n'a pas d'effet sur une conversion.
-- Le pointeur d'un diagnostic est celui du nœud réécrit ; celui d'un champ `Unsupported` est celui du champ.
-- Un cas d'enum indisponible (`mutualTLS`, `querystring`, style `cookie`) retire l'objet qui le porte, au
-  pointeur de cet objet.
-- Scopes d'un schéma non OAuth en 3.0 (permissif) : la liste devient `[]`, pointeur `/security/0/ApiKey` ; ils
-  sont cherchés dans `security` du document, des opérations, des opérations de leurs callbacks et de
+- `Converted` reports any output that differs from the shape of the model (that of the latest line): mostly in 3.0,
+  but also the empty `description` of a response in 3.1, and `nullable` on a `$ref` in every version. The mode
+  (strict or lenient) has no effect on a conversion.
+- The pointer of a diagnostic is that of the rewritten node; the pointer of an `Unsupported` field is that of the
+  field.
+- An unavailable enum case (`mutualTLS`, `querystring`, `cookie` style) removes the object that carries it, at the
+  pointer of that object.
+- Scopes of a non-OAuth scheme in 3.0 (lenient): the list becomes `[]`, pointer `/security/0/ApiKey`; they are
+  searched in the `security` of the document, of the operations, of the operations of their callbacks and of
   `components.callbacks`.
-- Une conversion est signalée une fois, même quand plusieurs rewriters y participent (plusieurs types + `nullable`,
-  `contentMediaType` + `contentEncoding`) ; deux conversions distinctes d'un même nœud donnent deux `Converted`.
-- En 3.0, le schéma « null seul » s'écrit `{enum: [null], type: object, nullable: true}`, dans l'ordre des champs,
-  y compris dans une branche `anyOf`.
-- `NullableWithoutTypeRewriter` est le dernier rewriter de `Schema` : la branche qu'il construit contient des
-  mots-clés déjà convertis, et `RefSiblingsRewriter` lui laisse un `$ref` nullable sans type.
-- Les extensions réservées `x-oai-` / `x-oas-` sont écrites en 3.0, retirées ou rejetées à partir de 3.1.
-- `Validator::validate()` ne lève pas `UnsupportedFeatureException` : chaque fonctionnalité non exprimable devient
-  une violation dont la règle est `Serializer::class` ; les erreurs du schéma officiel ont pour règle
+- A conversion is reported once, even when several rewriters take part in it (several types + `nullable`,
+  `contentMediaType` + `contentEncoding`); two distinct conversions of the same node give two `Converted`.
+- In 3.0, the "null only" schema is written `{enum: [null], type: object, nullable: true}`, in field order, including
+  in an `anyOf` branch.
+- `NullableWithoutTypeRewriter` is the last rewriter of `Schema`: the branch it builds contains keywords already
+  converted, and `RefSiblingsRewriter` leaves it a nullable `$ref` without type.
+- The reserved extensions `x-oai-` / `x-oas-` are written in 3.0, removed or rejected from 3.1.
+- `Validator::validate()` does not throw `UnsupportedFeatureException`: each feature that cannot be expressed becomes
+  a violation whose rule is `Serializer::class`; the errors of the official schema have the rule
   `OpisJsonSchemaValidator::class`.
-- YAML : `Yaml::DUMP_OBJECT_AS_MAP | DUMP_EMPTY_ARRAY_AS_SEQUENCE | DUMP_MULTI_LINE_LITERAL_BLOCK |
-  DUMP_NUMERIC_KEY_AS_STRING`, profondeur inline 10, indentation 2 ; les codes de statut sont donc entre guillemets.
+- YAML: `Yaml::DUMP_OBJECT_AS_MAP | DUMP_EMPTY_ARRAY_AS_SEQUENCE | DUMP_MULTI_LINE_LITERAL_BLOCK |
+  DUMP_NUMERIC_KEY_AS_STRING`, inline depth 10, indentation 2; status codes are therefore quoted. An empty map is
+  written `{}` from symfony/yaml 8.1, `{  }` before.
 
-## 4. La validation
+## 4. The validation
 
-| Pattern | Classe | Rôle |
+| Pattern | Class | Role |
 | --- | --- | --- |
-| **Rule / Specification** | `Rule` | Une règle sémantique par classe |
-| **Composite** | `Validator` | Applique une liste de règles, activables et désactivables |
-| **Notification** | `Violations` | Collecte toutes les violations |
-| **Ports & Adapters** | `JsonSchemaValidator` (`OpisJsonSchemaValidator`) | Validation officielle (niveau 1), dépendance optionnelle |
+| **Rule / Specification** | `Rule` | One semantic rule per class |
+| **Composite** | `Validator` | Applies a list of rules, which can be added and removed |
+| **Notification** | `Violations` | Collects every violation |
+| **Ports & Adapters** | `JsonSchemaValidator` (`OpisJsonSchemaValidator`) | Official validation (level 1), optional dependency |
 
-Les règles travaillent sur **le document sérialisé** (le tableau effectivement écrit, avec ses JSON Pointers),
-pas sur le modèle : on valide ce qui sort, pour une version donnée.
+The rules work on **the serialized document** (the array actually written, with its JSON Pointers), not on the
+model: what is validated is what comes out, for a given version.
 
 ```php
 interface Rule
@@ -306,101 +306,100 @@ interface Rule
 }
 ```
 
-- `Validator::validate()` écrit le document en mode permissif. S'il a fallu retirer une fonctionnalité (violation
-  `Serializer::class`), ni le schéma officiel ni les règles ne s'exécutent : le document écrit n'est plus celui décrit,
-  et on signalerait les conséquences du retrait (document vide, référence orpheline).
-- Une règle peut recevoir un document que le schéma officiel rejette : chaque accès vérifie la forme du nœud.
-- Le parcours est partagé par `Rules\Document` (interne) : path items et opérations écrits sur place, dans l'ordre du
-  document (`paths`, `webhooks`, puis `components`), chaque opération suivie de celles de ses callbacks ; un path item
-  `$ref` est listé avec les champs écrits à côté de sa référence, sans sa cible. `Document::resolve()` suit les `$ref`
-  locaux (paramètres, path items, schémas de sécurité) ; une cible externe n'est pas lue. Une violation est signalée à l'endroit où l'on corrige, la référence plutôt que sa cible.
-- `Rules\Scope` sait si un nœud est un objet de la spec ou une map de noms, d'après le champ qui le contient et la
-  nature de son parent : une entrée de map est toujours un objet, même nommée `content`. Il repère les valeurs
-  libres (`example`, `default`, `const`, `enum`, `value`, `dataValue`, extensions, liste `examples` d'un schéma,
-  `requestBody` d'un Link) : un `$ref` ou un `schema` qui s'y trouve est une donnée. Les clés `x-` sont des
-  extensions dans Paths, Responses et Callback, des noms dans les autres maps.
-- `OpisJsonSchemaValidator` place à la racine (`""`) les erreurs qu'opis signale sous `/`. Un document impossible à
-  encoder en JSON (UTF-8 invalide) devient une violation `Serializer::class` au lieu d'une exception ; les règles
-  s'exécutent quand même.
-- `OpisJsonSchemaValidator` charge les schémas à la première validation, une fois par instance (pas d'état
-  statique) : on réutilise une instance pour valider plusieurs documents.
+- `Validator::validate()` writes the document in lenient mode. When a feature had to be removed (a
+  `Serializer::class` violation), neither the official schema nor the rules run: the written document is no longer
+  the described one, and the consequences of the removal (empty document, orphan reference) would be reported.
+- A rule may receive a document the official schema rejects: every access checks the shape of the node.
+- The traversal is shared by `Rules\Document` (internal): path items and operations written in place, in document
+  order (`paths`, `webhooks`, then `components`), each operation followed by those of its callbacks; a `$ref` path
+  item is listed with the fields written next to its reference, without its target. `Document::resolve()` follows
+  local `$ref` (parameters, path items, security schemes); an external target is not read. A violation is reported
+  where it is fixed: the reference rather than its target.
+- `Rules\Scope` knows whether a node is a specification object or a map of names, from the field that holds it and
+  the nature of its parent: a map entry is always an object, even when named `content`. It spots free values
+  (`example`, `default`, `const`, `enum`, `value`, `dataValue`, extensions, the `examples` list of a schema, the
+  `requestBody` of a Link): a `$ref` or a `schema` found there is data. `x-` keys are extensions in Paths, Responses
+  and Callback, names in the other maps.
+- `OpisJsonSchemaValidator` puts at the root (`""`) the errors opis reports under `/`. A document that cannot be
+  encoded as JSON (invalid UTF-8) becomes a `Serializer::class` violation instead of an exception; the rules run
+  anyway.
+- `OpisJsonSchemaValidator` loads the schemas on the first validation, once per instance (no static state): reuse an
+  instance to validate several documents.
 
-## 5. Les erreurs
+## 5. Errors
 
-- Toutes les exceptions implémentent l'interface `OpenApiWriterException` et étendent l'exception SPL qui
-  correspond (`InvalidArgumentException extends \InvalidArgumentException`…).
-- Elles se créent par des constructeurs nommés : `InvalidArgumentException::forField(Info::class, 'license', '…')`,
+- Every exception implements the `OpenApiWriterException` interface and extends the matching SPL exception
+  (`InvalidArgumentException extends \InvalidArgumentException`…).
+- They are created through named constructors: `InvalidArgumentException::forField(Info::class, 'license', '…')`,
   `UnsupportedFeatureException::fromDiagnostics($diagnostics)`.
-- Le message commence par la cible : `Info::license: url and identifier are mutually exclusive`.
-- Exception immédiate seulement pour une valeur interdite **dans toutes les versions**. Ce qui dépend de la version
-  relève de la sérialisation ; ce qui dépend du document entier relève du validateur.
-- Valeurs interdites retenues (`InvalidArgumentException`) : `url` + `identifier` d'une licence, `example` +
-  `examples` (Parameter, Header, MediaType), `value` + `externalValue` (Example), `operationRef` + `operationId`
-  (Link), code de statut mal formé, compteur `min*` / `max*` négatif, `multipleOf` ≤ 0, type inconnu ou en double,
-  `x('')` et `x('x-')`, `Reference::for()` sur un objet hors composants.
-- Messages de référence : `Parameter::in: "body" is not one of query, header, path, cookie, querystring`,
+- The message starts with the target: `Info::license: url and identifier are mutually exclusive`.
+- An immediate exception only for a value forbidden **in every version**. What depends on the version belongs to the
+  serialization; what depends on the whole document belongs to the validator.
+- Forbidden values (`InvalidArgumentException`): `url` + `identifier` of a license, `example` + `examples`
+  (Parameter, Header, MediaType), `value` + `externalValue` (Example), `operationRef` + `operationId` (Link),
+  malformed status code, negative `min*` / `max*` counter, `multipleOf` ≤ 0, unknown or duplicate type, `x('')` and
+  `x('x-')`, `Reference::for()` on an object outside the components.
+- Reference messages: `Parameter::in: "body" is not one of query, header, path, cookie, querystring`,
   `Components::schemas: an entry with the objectId "User" already exists`, `Components::schemas: an entry has no
   objectId`, `Reference::for: the Schema has no objectId`, `symfony/yaml is required to write YAML: composer
-  require symfony/yaml`, et `"2 features cannot be written for this version:\n- /webhooks: …"`.
+  require symfony/yaml`, and `"2 features cannot be written for this version:\n- /webhooks: …"`.
 
-## 6. Conventions de code
+## 6. Code conventions
 
-| Sujet | Règle |
+| Topic | Rule |
 | --- | --- |
-| Classes | `final` par défaut ; abstraites seulement pour les classes de base du modèle |
-| Traits | Interdits dans `src/` : base abstraite ou composition (cause principale du désordre du générateur) |
-| État global | Aucun singleton, aucune propriété statique mutable ; seul le cache de `MetadataFactory` est permis |
-| Types | `declare(strict_types=1)`, toutes les signatures typées ; `mixed` réservé aux valeurs libres et documenté |
-| PHPDoc | Génériques pour les collections (`list<Server>`, `array<string, SchemaContract>`), pas de PHPDoc redondante |
-| Enums | Les méthodes acceptent l'enum ou sa valeur ; conversion par `::from()`, valeur invalide = `InvalidArgumentException` |
-| Nommage | Objets = nom de la spec au singulier ; unions = `*Contract` ; capacités = adjectif (`Extensible`) ; services = nom (`Rewriter`, `Rule`, `Encoder`) ; pas de suffixe `Interface` |
-| Rewriters / règles | Nommés d'après la fonctionnalité : `NullableRewriter`, `UniqueOperationIdRule` |
-| Fichiers | Une classe par fichier, PSR-4, dossier = couche |
+| Classes | `final` by default; abstract only for the base classes of the model |
+| Traits | Forbidden in `src/`: use an abstract base or composition |
+| Global state | No singleton, no mutable static property; only the cache of `MetadataFactory` is allowed |
+| Types | `declare(strict_types=1)`, every signature typed; `mixed` reserved for free values and documented |
+| PHPDoc | Generics for collections (`list<Server>`, `array<string, SchemaContract>`), no redundant PHPDoc |
+| Enums | Methods accept the enum or its value; conversion through `::from()`, invalid value = `InvalidArgumentException` |
+| Naming | Objects = singular name from the specification; unions = `*Contract`; capabilities = adjective (`Extensible`); services = noun (`Rewriter`, `Rule`, `Encoder`); no `Interface` suffix |
+| Rewriters / rules | Named after the feature: `NullableRewriter`, `UniqueOperationIdRule` |
+| Files | One class per file, PSR-4, folder = layer |
 
-## 7. Patterns de test
+## 7. Test patterns
 
-- **Template Method** : `SpecObjectTestCase` (abstraite) teste pour chaque objet l'immuabilité, `objectId`,
-  les extensions et chaque champ à partir d'un fournisseur `fields()`. Chaque classe de test d'objet l'étend et
-  ajoute ses cas propres.
-- **Object Mother** : `tests/Support/Documents.php` fournit les documents de référence (petstore, webhooks…),
-  partagés par les suites Conformance et Validation.
-- **Un test par rewriter et par version**, et un test par règle (un cas valide, un cas invalide).
-- Assertions partagées dans une classe de base `TestCase` (`assertSerializesTo`, `assertValidOpenApi`), pas dans
-  des traits.
-- Structure Arrange / Act / Assert, nom du test en phrase.
-- **Fixtures** : `tests/fixtures/<ligne>/` (`3.0`, `3.1`, `3.2`), écrites pour le dernier patch de la ligne ; pour
-  un autre patch, le helper remplace le champ `openapi`. Format `JSON_PRETTY_PRINT` de PHP plus un saut de ligne,
-  comparé octet par octet. Un fragment est enveloppé dans un document minimal (`Envelope`) avant d'être validé.
-- La fixture attendue est validée contre le schéma officiel **avant** la comparaison (`OfficialSchema`, outil de
-  test indépendant du code testé, configuré comme `OpisJsonSchemaValidator`).
-- `composer fixtures:update` réécrit les fixtures depuis la sortie réelle, seulement quand elle est du JSON valide :
-  chaque modification se relit dans le diff.
-- Les doublures de test (rewriters, règles) sont des classes nommées de `tests/Support/` : les règles `phpat` de
-  nommage s'appliquent aussi aux classes anonymes.
+- **Template Method**: `SpecObjectTestCase` (abstract) tests for each object the immutability, `objectId`, the
+  extensions and every field from a `fields()` provider. Every object test class extends it and adds its own cases.
+- **Object Mother**: `tests/Support/Documents.php` provides the reference documents (petstore, webhooks…), shared by
+  the Conformance and Validation suites.
+- **One test per rewriter and per version**, and one test per rule (a valid case, an invalid case).
+- Shared assertions in a base class `TestCase` (`assertSerializesTo`, `assertValidOpenApi`), not in traits.
+- Arrange / Act / Assert structure, test name as a sentence.
+- **Fixtures**: `tests/fixtures/<line>/` (`3.0`, `3.1`, `3.2`), written for the latest patch of the line; for another
+  patch, the helper replaces the `openapi` field. PHP's `JSON_PRETTY_PRINT` format plus a newline, compared byte by
+  byte. A fragment is wrapped in a minimal document (`Envelope`) before it is validated.
+- The expected fixture is validated against the official schema **before** the comparison (`OfficialSchema`, a test
+  tool independent from the tested code, configured like `OpisJsonSchemaValidator`).
+- `composer fixtures:update` rewrites the fixtures from the actual output, only when it is valid JSON: every change is
+  reviewed in the diff.
+- Test doubles (rewriters, rules) are named classes of `tests/Support/`: the `phpat` naming rules also apply to
+  anonymous classes.
 
-## 8. Recettes
+## 8. Recipes
 
-### Ajouter un champ
+### Adding a field
 
-1. Ajouter la propriété `#[Field(since: …)]` à sa place dans l'ordre de la spec.
-2. Ajouter le setter du même nom, qui appelle `with()`.
-3. Ajouter le cas dans `fields()` du test de l'objet, et la fixture de sortie de chaque version concernée.
-4. Si le champ ne s'exprime pas dans une version antérieure, rien d'autre à faire : `since` suffit. S'il se
-   **convertit**, écrire un rewriter (recette suivante).
+1. Add the `#[Field(since: …)]` property at its place in the order of the specification.
+2. Add the setter with the same name, which calls `with()`.
+3. Add the case to `fields()` in the test of the object, and the output fixture of each version concerned.
+4. If the field cannot be expressed in an earlier version, nothing else to do: `since` is enough. If it is
+   **converted**, write a rewriter (next recipe).
 
-### Ajouter une conversion entre versions
+### Adding a conversion between versions
 
-1. Créer `src/Serialization/Rewriters/<Feature>Rewriter.php` et l'insérer à sa place dans
+1. Create `src/Serialization/Rewriters/<Feature>Rewriter.php` and insert it at its place in
    `RewriterChain::default()`.
-2. Écrire le test du rewriter pour chaque version, et la ligne correspondante de la matrice `tests/Compatibility/`.
-3. Cocher la ligne dans le document du jalon (M4 ou M5).
+2. Write the test of the rewriter for each version, and the matching row of the `tests/Compatibility/` matrix.
+3. Document the conversion in `skills/openapi-writer/versions.md` and in the `CHANGELOG.md`.
 
-## 9. Garde-fous automatiques
+## 9. Automatic safeguards
 
-| Garde-fou | Ce qu'il vérifie |
+| Safeguard | What it checks |
 | --- | --- |
-| PHPStan niveau max + règles strictes | Types, code mort, comparaisons |
-| `phpat` (tests d'architecture, `composer stan`) | Règle de dépendance entre couches, classes `final`, abstraites réservées à la base du modèle, aucun trait dans `src/`, nommage (`*Contract`, `*Rewriter`, `*Rule`, pas de suffixe `Interface`) |
+| PHPStan max level + strict rules | Types, dead code, comparisons |
+| `phpat` (architecture tests, `composer stan`) | Dependency rule between layers, `final` classes, abstract classes reserved to the base of the model, no trait in `src/`, naming (`*Contract`, `*Rewriter`, `*Rule`, no `Interface` suffix) |
 | PHP-CS-Fixer (PER-CS) | Style |
-| `SpecObjectTestCase` | Contrat commun des 29 objets |
-| Infection | Qualité des tests (MSI ≥ 85 %) |
+| `SpecObjectTestCase` | Common contract of the 29 objects |
+| Infection | Quality of the tests (MSI ≥ 85%) |

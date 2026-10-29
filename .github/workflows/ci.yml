@@ -49,9 +49,6 @@ jobs:
       - name: Validate composer.json
         run: composer validate --strict
 
-      - name: Progress table is up to date
-        run: php bin/progress.php --check
-
       - uses: ramsey/composer-install@v3
 
       - name: PHPStan

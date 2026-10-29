@@ -11,7 +11,6 @@ library must never depend on Laravel or any other framework.
 
 - Specification (source of truth): https://claude.ai/artifact/PKmRGrPDwdnietSK4Aik3X
 - **Architecture, patterns and conventions: `docs/architecture.md` — read it before writing any code.**
-- Roadmap and progress: `docs/README.md`, one document per milestone in `docs/M*.md`
 
 Out of scope: reading/parsing OpenAPI files, scanning PHP code, resolving external `$ref`, HTTP validation, UIs.
 
@@ -22,7 +21,6 @@ composer test            # whole PHPUnit suite
 composer test:coverage   # coverage (pcov/Xdebug), fails under 95% of lines
 composer stan            # PHPStan max level on src/, tests/, bin/
 composer cs              # code style check (PER-CS); composer cs:fix to fix
-composer progress        # rebuild the progress table of docs/README.md
 composer ci              # every blocking check except coverage and mutation
 
 vendor/bin/phpunit --filter test_name            # single test
@@ -34,13 +32,9 @@ Runtime requirements are only `php ^8.2` and `ext-json`; never add a mandatory r
 
 ## Workflow: tests first
 
-Milestones run in order: M0 bootstrap → M1 API contract (signatures, no logic) → M2 full test suite (red) →
-M3 objects + 3.1 serialization → M4 3.0 adapter → M5 3.2 adapter → M6 validation → M7 release 1.0.0.
-
-- Never implement behaviour that has no test yet. During M1, method bodies return neutral values
-  (`clone $this`, `[]`, `''`, `null`) so that M2 tests fail on assertions, not on fatal errors.
-- When a deliverable is done, tick it (`- [x]`) in its `docs/M*.md`, run `composer progress`, and commit both.
-  The CI fails when `docs/README.md` is out of sync with the checklists.
+- Never implement behaviour that has no test yet: write the failing test (and its fixture) first.
+- A new public method or rule is also documented in `CHANGELOG.md`, in the skill, and in `docs/architecture.md` when
+  it introduces a new rule.
 
 ## Architecture (details in `docs/architecture.md`)
 
@@ -89,4 +83,4 @@ one class.
 
 ## Languages
 
-Code, identifiers, comments, README, CONTRIBUTING and CHANGELOG are in English. `docs/` is written in French.
+Everything is written in English: code, identifiers, comments, README, CONTRIBUTING, CHANGELOG and `docs/`.
