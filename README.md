@@ -1,6 +1,10 @@
 # OpenAPI Writer
 
 [![CI](https://github.com/ark4ne/openapi-writer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ark4ne/openapi-writer/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/ark4ne/openapi-writer/graph/badge.svg)](https://codecov.io/gh/ark4ne/openapi-writer)
+[![Latest version](https://img.shields.io/packagist/v/ark4ne/openapi-writer)](https://packagist.org/packages/ark4ne/openapi-writer)
+[![PHP](https://img.shields.io/packagist/dependency-v/ark4ne/openapi-writer/php)](https://packagist.org/packages/ark4ne/openapi-writer)
+[![License](https://img.shields.io/packagist/l/ark4ne/openapi-writer)](LICENSE)
 
 Framework-agnostic, fluent and immutable PHP builder for **OpenAPI 3.0, 3.1 and 3.2** documents.
 

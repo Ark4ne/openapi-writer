@@ -76,6 +76,14 @@ jobs:
       - name: Check minimum coverage
         run: php bin/coverage-check.php build/coverage/clover.xml 95
 
+      # Feeds the coverage badge of the README; an upload failure never fails the CI.
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: build/coverage/clover.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
   mutation:
     name: Mutation testing (minimum 85% MSI)
     runs-on: ubuntu-latest
