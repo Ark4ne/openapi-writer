@@ -1,0 +1,12 @@
+# Identity of the library in the ark4ne documentation portal (see .claude/skills/ark4ne-docs).
+name: OpenAPI Writer
+package: ark4ne/openapi-writer
+tagline: Framework-agnostic, fluent and immutable PHP builder for OpenAPI 3.0, 3.1 and 3.2 documents, written as JSON or YAML and validated.
+icon: i-lucide-file-pen-line
+color: sky
+order: 40
+compatibility:
+  - { version: '1.x', php: '^8.2', status: active }
+related: [laravel-openapi-generator]
+links:
+  - { label: OpenAPI Specification, to: 'https://spec.openapis.org/oas/latest.html', icon: i-lucide-book-marked }
